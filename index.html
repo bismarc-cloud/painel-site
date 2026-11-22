@@ -1,0 +1,3443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B0F19" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="WebPanel Pro" />
+  <title>WebPanel Pro — Gestão Profissional de Sites</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            enterprise: '#0B0F19',
+            enterpriseSoft: '#131A2B',
+            brand: '#4F46E5'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --panel-dark: #0B0F19;
+      --panel-accent: #4F46E5;
+      --panel-bg: #F8FAFC;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      max-width: 100vw;
+      background-color: var(--panel-bg);
+      color: #0F172A;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .panel-bg-dark { background-color: var(--panel-dark) !important; }
+    .panel-bg-accent { background-color: var(--panel-accent) !important; }
+    .panel-text-accent { color: var(--panel-accent) !important; }
+    .panel-bg-page { background-color: var(--panel-bg) !important; }
+    input, select, textarea { font-size: 16px; }
+    @media (min-width: 768px) {
+      input, select, textarea { font-size: 14px; }
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    @keyframes vibrateBrand {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-4px) rotate(-1deg); }
+      40% { transform: translateX(4px) rotate(1deg); }
+      60% { transform: translateX(-3px) rotate(-0.5deg); }
+      80% { transform: translateX(3px) rotate(0.5deg); }
+    }
+    .brand-vibrate {
+      animation: vibrateBrand 0.35s ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.55; }
+    }
+    .dot-pending {
+      animation: pulseDot 1.4s infinite;
+    }
+
+    /* Palco da Prévia Fiel (sem restrição max-width no iframe escalado) */
+    #previa-viewport-frame {
+      position: relative;
+      overflow: hidden;
+      background: #FFFFFF;
+      margin: 0 auto;
+    }
+    #iframe-previa-site {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border: 0;
+      max-width: none !important;
+      transform-origin: top left;
+      background: #FFFFFF;
+      display: block;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-indigo-600 selection:text-white">
+
+  <!-- TOAST GLOBAL -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-[92vw] sm:max-w-sm pointer-events-none"></div>
+
+  <!-- =========================================================================
+       1. PORTAL PÚBLICO INICIAL (CLIENTE)
+  ========================================================================== -->
+  <div id="public-landing" class="min-h-screen flex flex-col panel-bg-page">
+    <!-- Cabeçalho Público -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
+        <!-- Marca com Gatilho Oculto de 5 Cliques para Admin -->
+        <div id="admin-trigger-header" class="flex items-center gap-3 select-none cursor-pointer group min-w-0">
+          <div id="pub-brand-logo-wrap" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl panel-bg-dark text-white flex items-center justify-center shadow-sm shrink-0 group-active:scale-95 transition overflow-hidden">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l9 4.5-9 4.5-9-4.5L12 3z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9 4.5 9-4.5" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5L12 21l9-4.5" />
+            </svg>
+          </div>
+          <div class="min-w-0 leading-tight">
+            <div class="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 truncate">
+              <span id="pub-brand-name">WebPanel</span> <span id="pub-brand-accent" class="panel-text-accent">Pro</span>
+            </div>
+            <div id="pub-brand-sub" class="text-[11px] font-medium text-slate-500 truncate">Portal Oficial do Cliente</div>
+          </div>
+        </div>
+
+        <button id="btn-header-login" type="button"
+          class="panel-bg-dark hover:opacity-90 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-sm transition flex items-center gap-2 shrink-0 cursor-pointer">
+          <span>Entrar na minha conta</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Público -->
+    <main class="flex-1">
+      <section class="relative overflow-hidden py-14 sm:py-20 lg:py-24 px-4 sm:px-6">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.08),_transparent_55%)] pointer-events-none"></div>
+        <div class="relative max-w-4xl mx-auto text-center">
+          <div class="inline-flex items-center gap-2 bg-white border border-slate-200/90 panel-text-accent text-xs font-semibold px-3.5 py-1.5 rounded-full mb-6 shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="pub-hero-badge">Infraestrutura Global Cloudflare • Atualização em Tempo Real</span>
+          </div>
+
+          <h1 id="pub-hero-title" class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12]">
+            Gerencie seu site com <span class="panel-text-accent">autonomia total</span> e segurança profissional.
+          </h1>
+
+          <p id="pub-hero-desc" class="mt-5 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Atualize logos, paleta de cores, textos das seções contratadas, fotos, ilustrações e links de WhatsApp em segundos — direto do celular ou computador, sem depender de código.
+          </p>
+
+          <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button id="btn-hero-login" type="button"
+              class="w-full sm:w-auto panel-bg-dark hover:opacity-90 text-white font-semibold px-7 py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+              <span>Acessar minha conta</span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <a href="#recursos"
+              class="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-7 py-3.5 rounded-xl transition text-center">
+              Ver o que posso editar
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cards de Categorias / Recursos do Cliente (Dinâmico) -->
+      <section id="recursos" class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
+        <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
+          <h2 id="pub-cat-title" class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Tudo o que você controla no seu painel</h2>
+          <p id="pub-cat-sub" class="mt-2 text-sm sm:text-base text-slate-600">Interface limpa e intuitiva pensada para atualizações rápidas no dia a dia.</p>
+        </div>
+
+        <div id="pub-cat-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"></div>
+      </section>
+
+      <!-- Faixa de Segurança -->
+      <section id="seguranca" class="panel-bg-dark text-white py-14 px-4 sm:px-6">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
+          <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+            <div class="text-indigo-400 font-bold text-xs uppercase tracking-wider mb-1">Acesso Protegido</div>
+            <div class="font-semibold text-base">Criptografia SHA-256</div>
+            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Troca obrigatória de senha forte no primeiro acesso e bloqueio contra tentativas indevidas.</p>
+          </div>
+          <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+            <div class="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">Alta Velocidade</div>
+            <div class="font-semibold text-base">Cloudflare Edge + Drive</div>
+            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Seus dados e imagens ficam protegidos em nuvem privada com entrega ultrarrápida na borda.</p>
+          </div>
+          <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+            <div class="text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">Praticidade Mobile</div>
+            <div class="font-semibold text-base">Instalável como App (PWA)</div>
+            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Adicione o painel à tela inicial do Android ou iPhone para gerenciar seu site como um aplicativo.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Rodapé Público Limpo e Harmônico (Sem "Acessar minha conta") -->
+    <footer class="bg-white border-t border-slate-200 py-8 px-4 sm:px-6">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+        <!-- Marca no Rodapé com Gatilho Oculto de 5 Cliques para Admin -->
+        <div id="admin-trigger-footer" class="inline-flex items-center gap-2.5 select-none cursor-pointer group">
+          <div id="pub-footer-logo-wrap" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-800 flex items-center justify-center border border-slate-200 shrink-0 overflow-hidden">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l9 4.5-9 4.5-9-4.5L12 3z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9 4.5 9-4.5" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5L12 21l9-4.5" />
+            </svg>
+          </div>
+          <span class="text-sm font-semibold text-slate-700">
+            <span id="pub-footer-brand">WebPanel Pro</span> <span id="pub-footer-tagline" class="text-slate-400 font-normal">• Gestão Profissional de Sites</span>
+          </span>
+        </div>
+
+        <div id="pub-footer-edge" class="text-xs font-medium text-slate-500">
+          Hospedagem & Segurança via Cloudflare Edge
+        </div>
+
+        <div id="pub-footer-copy" class="text-xs text-slate-400">
+          © 2026 WebPanel Pro
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- =========================================================================
+       2. WORKSPACE AUTENTICADO (CLIENTE E ADMIN ISOLADOS)
+  ========================================================================== -->
+  <div id="app-workspace" class="hidden min-h-screen flex bg-slate-100">
+    <!-- Sidebar Desktop (Enterprise Escura) -->
+    <aside class="hidden lg:flex lg:flex-col w-72 panel-bg-dark text-slate-200 shrink-0 min-h-screen sticky top-0 h-screen border-r border-slate-800">
+      <div class="p-5 border-b border-slate-800/80 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="sidebar-brand-logo-wrap" class="w-9 h-9 rounded-xl panel-bg-accent text-white flex items-center justify-center font-bold shrink-0 overflow-hidden">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l9 4.5-9 4.5-9-4.5L12 3z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9 4.5 9-4.5" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5L12 21l9-4.5" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div id="sidebar-brand-name" class="font-bold text-white text-sm truncate">WebPanel Pro</div>
+            <div id="sidebar-role-badge" class="text-[11px] text-indigo-300 font-medium truncate">Portal do Cliente</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloco Exclusivo Admin: Seletor de Site + Novo + Gemini -->
+      <div id="admin-sidebar-controls" class="hidden p-4 border-b border-slate-800/80 space-y-2.5">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Site em Edição</label>
+        <select id="admin-site-select" onchange="window.adminTrocarSite(this.value)"
+          class="w-full bg-enterpriseSoft border border-slate-700 text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500">
+        </select>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="window.adminCriarNovoSite()"
+            class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2 px-2.5 rounded-xl transition cursor-pointer">
+            + Novo Site
+          </button>
+          <button type="button" onclick="window.abrirModalGemini()"
+            class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-95 text-white text-xs font-semibold py-2 px-2.5 rounded-xl transition cursor-pointer">
+            ✨ Gemini IA
+          </button>
+        </div>
+      </div>
+
+      <!-- Menu Lateral -->
+      <nav id="sidebar-nav" class="flex-1 p-3 space-y-1 overflow-y-auto"></nav>
+
+      <!-- Rodapé da Sidebar -->
+      <div class="p-4 border-t border-slate-800/80 space-y-2">
+        <button id="btn-pwa-install" type="button" onclick="window.instalarPWA()"
+          class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
+          <span>📲 Instalar como App</span>
+        </button>
+        <button type="button" onclick="window.fazerLogout()"
+          class="w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold py-2.5 px-3 rounded-xl transition cursor-pointer">
+          Sair da Conta
+        </button>
+      </div>
+    </aside>
+
+    <!-- Coluna Principal -->
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+      <!-- Topbar -->
+      <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-3 sm:px-6 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <!-- Botão Menu Drawer no Mobile -->
+            <button type="button" onclick="window.toggleMobileDrawer(true)"
+              class="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 shrink-0 cursor-pointer"
+              aria-label="Abrir menu">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <h1 id="topbar-site-title" class="font-bold text-slate-900 text-sm sm:text-base truncate">Carregando...</h1>
+                <span id="topbar-mode-pill" class="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                  ● Prévia Local
+                </span>
+              </div>
+              <p id="topbar-user-sub" class="text-[11px] text-slate-500 truncate"></p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <button id="btn-copiar-link" type="button" onclick="window.copiarLinkSite()"
+              class="hidden sm:inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition cursor-pointer">
+              Copiar Link
+            </button>
+            <a id="btn-abrir-site" href="#" target="_blank" rel="noopener noreferrer"
+              class="hidden sm:inline-flex items-center gap-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-semibold px-3 py-2 rounded-xl transition">
+              Abrir ↗
+            </a>
+            <button id="btn-salvar-principal" type="button" onclick="window.salvarAlteracoesSite()"
+              class="relative bg-enterprise hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold px-3.5 sm:px-5 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+              <span id="dot-pendente" class="hidden w-2 h-2 rounded-full bg-amber-400 dot-pending"></span>
+              <span>Salvar</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Conteúdo da Aba Ativa -->
+      <main id="workspace-scroll-container" class="flex-1 px-3 sm:px-6 py-5 pb-24 lg:pb-10 overflow-x-hidden">
+        <div id="workspace-content" class="max-w-7xl mx-auto min-w-0"></div>
+      </main>
+
+      <!-- Barra de Navegação Inferior Mobile -->
+      <nav id="mobile-bottom-nav" class="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-slate-200 px-1 py-1.5 flex items-center justify-around shadow-lg"></nav>
+    </div>
+  </div>
+
+  <!-- Drawer Lateral Mobile -->
+  <div id="mobile-drawer" class="hidden fixed inset-0 z-50 lg:hidden">
+    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-xs" onclick="window.toggleMobileDrawer(false)"></div>
+    <div class="relative w-72 max-w-[85vw] h-full panel-bg-dark text-slate-200 flex flex-col shadow-2xl">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <span id="mobile-drawer-brand" class="font-bold text-white text-sm">WebPanel Pro</span>
+        <button type="button" onclick="window.toggleMobileDrawer(false)" class="p-1.5 text-slate-400 hover:text-white cursor-pointer">✕</button>
+      </div>
+      <div id="mobile-admin-controls" class="hidden p-4 border-b border-slate-800 space-y-2.5">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Site em Edição</label>
+        <select id="mobile-admin-site-select" onchange="window.adminTrocarSite(this.value); window.toggleMobileDrawer(false);"
+          class="w-full bg-enterpriseSoft border border-slate-700 text-white text-xs rounded-xl px-3 py-2.5"></select>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="window.adminCriarNovoSite(); window.toggleMobileDrawer(false);"
+            class="bg-slate-800 text-white text-xs font-semibold py-2 rounded-xl">+ Novo Site</button>
+          <button type="button" onclick="window.abrirModalGemini(); window.toggleMobileDrawer(false);"
+            class="bg-indigo-600 text-white text-xs font-semibold py-2 rounded-xl">✨ Gemini IA</button>
+        </div>
+      </div>
+      <nav id="mobile-drawer-nav" class="flex-1 p-3 space-y-1 overflow-y-auto"></nav>
+      <div class="p-4 border-t border-slate-800 space-y-2">
+        <button type="button" onclick="window.instalarPWA(); window.toggleMobileDrawer(false);"
+          class="w-full bg-slate-800 text-slate-200 text-xs font-semibold py-2.5 rounded-xl">📲 Instalar como App</button>
+        <button type="button" onclick="window.fazerLogout()"
+          class="w-full bg-rose-500/15 text-rose-300 text-xs font-semibold py-2.5 rounded-xl">Sair da Conta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       3. MODAIS (LOGIN CLIENTE, LOGIN ADMIN OCULTO, TROCA DE SENHA, GEMINI, TEMPLATE COR)
+  ========================================================================== -->
+
+  <!-- Modal Login Cliente (Limpo, sem menção a Admin) -->
+  <div id="modal-login-cliente" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 sm:p-7 relative">
+      <button type="button" onclick="window.fecharModal('modal-login-cliente')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 cursor-pointer">✕</button>
+      <div class="mb-6">
+        <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full mb-2">Área do Cliente</span>
+        <h2 class="text-xl font-bold text-slate-900">Entrar na sua conta</h2>
+        <p class="text-xs text-slate-500 mt-1">Informe o identificador do seu site e sua senha de acesso.</p>
+      </div>
+      <form id="form-login-cliente" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Usuário (ID do Site)</label>
+          <input id="input-cliente-usuario" type="text" required autocomplete="username" placeholder="ex: aline-aguiar"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Senha</label>
+          <input id="input-cliente-senha" type="password" required autocomplete="current-password" placeholder="••••••••"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+        <div id="erro-login-cliente" class="hidden text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-3"></div>
+        <button type="submit"
+          class="w-full bg-enterprise hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition cursor-pointer">
+          Acessar Painel
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Login Admin (Escuro e Exclusivo via Gatilho Oculto) -->
+  <div id="modal-login-admin" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-enterprise w-full max-w-md rounded-2xl shadow-2xl border border-slate-700 p-6 sm:p-7 relative text-white">
+      <button type="button" onclick="window.fecharModal('modal-login-admin')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 cursor-pointer">✕</button>
+      <div class="mb-6">
+        <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-full mb-2">Console Restrito</span>
+        <h2 class="text-xl font-bold text-white">Acesso Administrativo</h2>
+        <p class="text-xs text-slate-400 mt-1">Autenticação por chave privada e senha mestre.</p>
+      </div>
+      <form id="form-login-admin" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Chave Privada Admin</label>
+          <input id="input-admin-chave" type="text" required placeholder="ADM-PRIV-2026"
+            class="w-full rounded-xl bg-enterpriseSoft border border-slate-700 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Senha Mestre</label>
+          <input id="input-admin-senha" type="password" required placeholder="••••••••"
+            class="w-full rounded-xl bg-enterpriseSoft border border-slate-700 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div id="erro-login-admin" class="hidden text-xs font-medium text-rose-300 bg-rose-500/15 border border-rose-500/30 rounded-xl p-3"></div>
+        <button type="submit"
+          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition cursor-pointer">
+          Entrar no Console Master
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Bloqueante: Troca Obrigatória de Senha -->
+  <div id="modal-trocar-senha" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 sm:p-7">
+      <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full mb-2">Segurança Obrigatória</span>
+      <h2 class="text-xl font-bold text-slate-900">Defina sua Nova Senha</h2>
+      <p class="text-xs text-slate-600 mt-1 mb-5">No primeiro acesso, você precisa substituir a senha padrão por uma senha forte (mínimo 8 caracteres, contendo letra, número e símbolo).</p>
+      <form id="form-trocar-senha" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nova Senha Forte</label>
+          <input id="input-nova-senha-1" type="password" required placeholder="Ex: MinhaSenha#2026"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Confirmar Nova Senha</label>
+          <input id="input-nova-senha-2" type="password" required placeholder="Repita a nova senha"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+        <div id="erro-trocar-senha" class="hidden text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-3"></div>
+        <button type="submit"
+          class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition cursor-pointer">
+          Salvar Nova Senha e Continuar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Criar com Gemini (Exclusivo Admin) -->
+  <div id="modal-gemini" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 p-6 relative">
+      <button type="button" onclick="window.fecharModal('modal-gemini')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 cursor-pointer">✕</button>
+      <div class="flex items-center gap-2.5 mb-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center text-base">✨</div>
+        <div>
+          <h3 class="font-bold text-slate-900 text-lg">Criar Site com Gemini IA</h3>
+          <p class="text-xs text-slate-500">Descreva o negócio, cores, serviços e WhatsApp.</p>
+        </div>
+      </div>
+      <textarea id="input-prompt-gemini" rows="5" placeholder="Ex: Crie um site para a Clínica Odonto Sorriso em Macaé, paleta azul marinho e dourado, WhatsApp 22 99999-1234, com 4 serviços (Implantes, Clareamento, Ortodontia, Limpeza) e textos acolhedores."
+        class="w-full rounded-xl border border-slate-300 p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600"></textarea>
+      <div class="mt-4 flex justify-end gap-2">
+        <button type="button" onclick="window.fecharModal('modal-gemini')" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancelar</button>
+        <button id="btn-executar-gemini" type="button" onclick="window.executarGeracaoGemini()"
+          class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-semibold hover:opacity-95 transition cursor-pointer">
+          ✨ Gerar Estrutura Agora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Salvar Novo Template de Cor -->
+  <div id="modal-novo-template-cor" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 p-6 relative">
+      <button type="button" onclick="window.fecharModal('modal-novo-template-cor')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 cursor-pointer">✕</button>
+      <h3 class="font-bold text-slate-900 text-base mb-1">Salvar como Novo Template</h3>
+      <p class="text-xs text-slate-500 mb-4">As 5 cores selecionadas agora serão salvas na sua biblioteca de templates.</p>
+      <input id="input-nome-template-cor" type="text" placeholder="Ex: Azul Corporativo Premium"
+        class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="window.fecharModal('modal-novo-template-cor')" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 cursor-pointer">Cancelar</button>
+        <button type="button" onclick="window.confirmarNovoTemplateCor()" class="px-4 py-2 rounded-xl bg-enterprise text-white text-xs font-semibold cursor-pointer">Salvar Template</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. ARMAZENAMENTO SEGURO COM FALLBACK EM MEMÓRIA (ZERO ERROS EM IFRAME)
+    // =========================================================================
+    const memStorage = {};
+    const safeStorage = {
+      get(key) {
+        try { return window.localStorage.getItem(key); } catch (e) { return memStorage[key] || null; }
+      },
+      set(key, val) {
+        try { window.localStorage.setItem(key, val); } catch (e) { memStorage[key] = String(val); }
+      },
+      remove(key) {
+        try { window.localStorage.removeItem(key); } catch (e) { delete memStorage[key]; }
+      }
+    };
+
+    // =========================================================================
+    // 2. SHA-256 EM JAVASCRIPT PURO (FUNCIONA EM QUALQUER AMBIENTE / HTTP)
+    // =========================================================================
+    function sha256PureJS(ascii) {
+      function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
+      const mathPow = Math.pow;
+      const maxWord = mathPow(2, 32);
+      const lengthProperty = 'length';
+      let i, j, result = '';
+      const words = [];
+      const asciiBitLength = ascii[lengthProperty] * 8;
+      let hash = sha256PureJS.h = sha256PureJS.h || [];
+      const k = sha256PureJS.k = sha256PureJS.k || [];
+      let primeCounter = k[lengthProperty];
+      const isComposite = {};
+      for (let candidate = 2; primeCounter < 64; candidate++) {
+        if (!isComposite[candidate]) {
+          for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+          hash[primeCounter] = (mathPow(candidate, .5) * maxWord) | 0;
+          k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+        }
+      }
+      ascii += '\x80';
+      while (ascii[lengthProperty] % 64 - 56) ascii += '\x00';
+      for (i = 0; i < ascii[lengthProperty]; i++) {
+        j = ascii.charCodeAt(i);
+        if (j >> 8) return '';
+        words[i >> 2] |= j << ((3 - i) % 4) * 8;
+      }
+      words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);
+      words[words[lengthProperty]] = (asciiBitLength);
+      for (j = 0; j < words[lengthProperty];) {
+        const w = words.slice(j, j += 16);
+        const oldHash = hash;
+        hash = hash.slice(0, 8);
+        for (i = 0; i < 64; i++) {
+          const w15 = w[i - 15], w2 = w[i - 2];
+          const a = hash[0], e = hash[4];
+          const temp1 = hash[7]
+            + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+            + ((e & hash[5]) ^ ((~e) & hash[6]))
+            + k[i]
+            + (w[i] = (i < 16) ? w[i] : (
+              w[i - 16]
+              + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+              + w[i - 7]
+              + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+            ) | 0);
+          const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+            + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+          hash = [(temp1 + temp2) | 0].concat(hash);
+          hash[4] = (hash[4] + temp1) | 0;
+        }
+        for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+      }
+      for (i = 0; i < 8; i++) {
+        for (j = 3; j + 1; j--) {
+          const b = (hash[i] >> (j * 8)) & 255;
+          result += ((b < 16) ? 0 : '') + b.toString(16);
+        }
+      }
+      return result;
+    }
+
+    function hashSenha(texto) {
+      return sha256PureJS("WEBPANEL_PRO_2026_SALT::" + String(texto || ""));
+    }
+
+    function esc(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    // =========================================================================
+    // 3. CONSTANTES DE BANCO LOCAL, SESSÃO (12h) E ESTADO GLOBAL
+    // =========================================================================
+    const KEYS = {
+      SITES: "webpanel_sites_db_v4",
+      AUTH: "webpanel_auth_db_v4",
+      LOGS: "webpanel_logs_db_v4",
+      TEMPLATES: "webpanel_color_templates_v4",
+      INTEGRACOES: "webpanel_integracoes_v4",
+      PORTAL_CONFIG: "webpanel_portal_config_v4",
+      SESSION: "webpanel_session_v4"
+    };
+
+    const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+    const SENHA_PADRAO_INICIAL = "12345678@@";
+    const ADMIN_CHAVE_PADRAO = "ADM-PRIV-2026";
+
+    let sessaoAtual = null;
+    let siteAtual = null;
+    let snapshotOriginalSite = null;
+    let abaAtual = "identidade";
+    let subAbaConfig = "personalizacao";
+    let portalConfigDraft = null;
+    let temAlteracoesPendentes = false;
+    let blocosAbertos = new Set([0]);
+    let previaDispositivo = "desktop";
+    let previaResizeObserver = null;
+    let deferredPromptPWA = null;
+    let tentativasLogin = { cliente: { count: 0, until: 0 }, admin: { count: 0, until: 0 } };
+
+    // =========================================================================
+    // 4. MOTOR DE ILUSTRAÇÕES PADRÃO (SVG ADAPTÁVEL À PALETA DE CORES)
+    // =========================================================================
+    function identificarTemaIlustracao(titulo, tipo) {
+      const t = String(titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (tipo === "hero") {
+        if (/(grafica|impressao|comunicacao|visual|banner|fachada)/.test(t)) return "hero_grafica";
+        if (/(odonto|sorriso|dental|implante)/.test(t)) return "odonto";
+        if (/(advocacia|direito|juridico)/.test(t)) return "advocacia";
+        if (/(estetica|beleza|facial|corporal)/.test(t)) return "estetica";
+        return "hero_psicanalise";
+      }
+      if (tipo === "sobre") return "sobre_psicanalise";
+      if (tipo === "faixa") return "faixa_transformacao";
+      if (/(ansiedade|panico|mente|acelerad)/.test(t)) return "ansiedade";
+      if (/(relacionamento|conflito|limite|casal|vinculo)/.test(t)) return "relacionamentos";
+      if (/(esgotamento|burnout|cansaco|estresse|depressao|tristeza)/.test(t)) return "esgotamento";
+      if (/(banner|lona|panfleto|adesivo)/.test(t)) return "banners";
+      if (/(placa|pvc|fachada|acm|sinalizacao)/.test(t)) return "placas";
+      if (/(uniforme|camisa|equipe|vestuario)/.test(t)) return "uniformes";
+      if (/(odonto|implante|clareamento|ortodontia|sorriso)/.test(t)) return "odonto";
+      if (/(advocacia|trabalhista|previdenciario|direito)/.test(t)) return "advocacia";
+      if (/(estetica|beleza|pele|spa)/.test(t)) return "estetica";
+      return "padrao_generico";
+    }
+
+    function gerarIlustracaoPadraoSVG(tema, paleta = {}, modo = "card") {
+      const p = paleta || {};
+      const pri = p.primaria || "#76513F";
+      const sec = p.secundaria || "#E8D9C7";
+      const fun = p.fundo || "#F8F5EF";
+      const cta = p.destaqueCta || "#C5A46D";
+      const txt = p.texto || "#3B2B23";
+      const uid = "g" + Math.random().toString(36).slice(2, 7);
+      const isHero = modo === "hero";
+      const vb = isHero ? "0 0 800 340" : "0 0 480 280";
+
+      const cenas = {
+        hero_psicanalise: `
+          <defs>
+            <linearGradient id="${uid}bg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="${fun}" />
+              <stop offset="100%" stop-color="${sec}" />
+            </linearGradient>
+            <linearGradient id="${uid}orb" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${cta}" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="${pri}" stop-opacity="0.12" />
+            </linearGradient>
+          </defs>
+          <rect width="800" height="340" fill="url(#${uid}bg)" />
+          <circle cx="400" cy="175" r="145" fill="url(#${uid}orb)" />
+          <circle cx="400" cy="175" r="110" fill="none" stroke="${cta}" stroke-width="1.5" stroke-dasharray="5 6" opacity="0.7" />
+          <circle cx="140" cy="70" r="65" fill="${pri}" opacity="0.06" />
+          <circle cx="670" cy="270" r="90" fill="${cta}" opacity="0.1" />
+          <path d="M90 175 C135 120, 165 230, 215 165 C255 115, 290 215, 345 170 C395 140, 455 155, 540 155 C610 155, 655 135, 710 125"
+            fill="none" stroke="${pri}" stroke-width="3.2" stroke-linecap="round" opacity="0.85" />
+          <path d="M110 205 C165 245, 225 145, 295 190 C365 225, 455 185, 560 185 C630 185, 675 170, 715 162"
+            fill="none" stroke="${cta}" stroke-width="2.4" stroke-linecap="round" opacity="0.9" />
+          <path d="M250 248 C295 278, 355 288, 400 288 C445 288, 505 278, 550 248"
+            fill="none" stroke="${pri}" stroke-width="4.5" stroke-linecap="round" />
+          <path d="M275 232 C315 256, 360 264, 400 264 C440 264, 485 256, 525 232"
+            fill="none" stroke="${pri}" stroke-width="2.2" stroke-linecap="round" opacity="0.55" />
+          <circle cx="400" cy="148" r="42" fill="${fun}" stroke="${pri}" stroke-width="2.5" />
+          <path d="M400 170 L400 126 M400 148 C412 135, 424 134, 424 146 C424 156, 412 158, 400 150 M400 140 C388 128, 376 128, 376 139 C376 149, 388 150, 400 143"
+            fill="none" stroke="${cta}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="400" cy="86" r="5" fill="${cta}" />
+          <circle cx="372" cy="96" r="3" fill="${pri}" opacity="0.65" />
+          <circle cx="428" cy="96" r="3" fill="${pri}" opacity="0.65" />
+        `,
+        ansiedade: `
+          <rect width="480" height="280" fill="${fun}" />
+          <circle cx="240" cy="140" r="105" fill="${sec}" opacity="0.85" />
+          <path d="M120 145 C145 95, 185 185, 210 135 C228 100, 252 175, 275 140 C300 115, 330 145, 365 140"
+            fill="none" stroke="${pri}" stroke-width="4" stroke-linecap="round" />
+          <circle cx="240" cy="140" r="64" fill="none" stroke="${cta}" stroke-width="2.2" stroke-dasharray="6 6" />
+          <circle cx="240" cy="140" r="34" fill="${fun}" stroke="${pri}" stroke-width="2.5" />
+          <path d="M226 142 Q240 124 254 142 Q240 158 226 142 Z" fill="${cta}" opacity="0.85" />
+          <circle cx="348" cy="82" r="7" fill="${cta}" opacity="0.7" />
+          <circle cx="132" cy="198" r="5" fill="${pri}" opacity="0.4" />
+        `,
+        relacionamentos: `
+          <rect width="480" height="280" fill="${fun}" />
+          <rect x="40" y="30" width="400" height="220" rx="28" fill="${sec}" opacity="0.65" />
+          <circle cx="188" cy="142" r="56" fill="${pri}" opacity="0.16" stroke="${pri}" stroke-width="3" />
+          <circle cx="292" cy="142" r="56" fill="${cta}" opacity="0.22" stroke="${cta}" stroke-width="3" />
+          <path d="M188 98 Q240 62 292 98" fill="none" stroke="${pri}" stroke-width="2.8" stroke-linecap="round" />
+          <path d="M188 186 Q240 222 292 186" fill="none" stroke="${cta}" stroke-width="2.8" stroke-linecap="round" />
+          <circle cx="240" cy="142" r="14" fill="${fun}" stroke="${pri}" stroke-width="2.5" />
+          <circle cx="240" cy="142" r="5" fill="${cta}" />
+        `,
+        esgotamento: `
+          <rect width="480" height="280" fill="${fun}" />
+          <circle cx="240" cy="155" r="92" fill="${sec}" opacity="0.9" />
+          <path d="M95 198 Q240 168 385 198" fill="none" stroke="${pri}" stroke-width="3.5" stroke-linecap="round" />
+          <path d="M135 218 Q240 198 345 218" fill="none" stroke="${cta}" stroke-width="2.2" stroke-linecap="round" opacity="0.8" />
+          <path d="M240 172 L240 88" stroke="${pri}" stroke-width="3.2" stroke-linecap="round" />
+          <path d="M240 132 C268 106, 300 108, 296 134 C292 154, 264 156, 240 144 Z" fill="${cta}" opacity="0.85" />
+          <path d="M240 116 C214 94, 186 96, 190 120 C194 138, 218 140, 240 128 Z" fill="${pri}" opacity="0.75" />
+          <circle cx="240" cy="70" r="8" fill="${cta}" />
+        `,
+        faixa_transformacao: `
+          <rect width="480" height="280" fill="${pri}" />
+          <circle cx="240" cy="140" r="110" fill="${cta}" opacity="0.16" />
+          <path d="M60 150 Q150 90 240 140 T420 130" fill="none" stroke="${cta}" stroke-width="3.5" stroke-linecap="round" opacity="0.85" />
+          <path d="M80 182 Q165 135 245 170 T405 162" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45" />
+          <circle cx="240" cy="140" r="30" fill="${cta}" opacity="0.92" />
+          <path d="M228 140 L237 149 L255 130" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+        `,
+        sobre_psicanalise: `
+          <rect width="480" height="280" fill="${sec}" />
+          <rect x="34" y="26" width="412" height="228" rx="26" fill="${fun}" stroke="${pri}" stroke-opacity="0.18" stroke-width="2" />
+          <circle cx="170" cy="118" r="36" fill="${pri}" opacity="0.85" />
+          <path d="M112 214 C112 172, 228 172, 228 214" fill="${pri}" opacity="0.85" />
+          <rect x="255" y="76" width="142" height="128" rx="16" fill="${sec}" stroke="${cta}" stroke-width="2.5" />
+          <line x1="278" y1="108" x2="372" y2="108" stroke="${pri}" stroke-width="3" stroke-linecap="round" />
+          <line x1="278" y1="132" x2="354" y2="132" stroke="${pri}" stroke-width="2.5" stroke-linecap="round" opacity="0.6" />
+          <line x1="278" y1="156" x2="364" y2="156" stroke="${cta}" stroke-width="3" stroke-linecap="round" />
+          <circle cx="384" cy="68" r="14" fill="${cta}" />
+        `,
+        hero_grafica: `
+          <rect width="800" height="340" fill="${fun}" />
+          <rect x="0" y="0" width="800" height="340" fill="${sec}" opacity="0.45" />
+          <rect x="95" y="55" width="230" height="230" rx="22" fill="${pri}" />
+          <rect x="122" y="88" width="176" height="24" rx="8" fill="${cta}" />
+          <rect x="122" y="130" width="130" height="14" rx="6" fill="#FFFFFF" opacity="0.7" />
+          <rect x="122" y="158" width="155" height="14" rx="6" fill="#FFFFFF" opacity="0.45" />
+          <circle cx="272" cy="242" r="22" fill="${cta}" />
+          <rect x="365" y="65" width="335" height="210" rx="22" fill="#FFFFFF" stroke="${pri}" stroke-opacity="0.15" stroke-width="2" />
+          <rect x="395" y="95" width="70" height="150" rx="14" fill="${pri}" />
+          <rect x="480" y="95" width="70" height="150" rx="14" fill="${cta}" />
+          <rect x="565" y="95" width="105" height="68" rx="14" fill="${sec}" />
+          <rect x="565" y="177" width="105" height="68" rx="14" fill="${pri}" opacity="0.2" />
+        `,
+        banners: `
+          <rect width="480" height="280" fill="${fun}" />
+          <rect x="35" y="28" width="410" height="224" rx="24" fill="${sec}" opacity="0.7" />
+          <line x1="165" y1="48" x2="315" y2="48" stroke="${pri}" stroke-width="4" stroke-linecap="round" />
+          <rect x="155" y="62" width="170" height="168" rx="12" fill="${pri}" />
+          <circle cx="172" cy="78" r="5" fill="${cta}" />
+          <circle cx="308" cy="78" r="5" fill="${cta}" />
+          <circle cx="172" cy="214" r="5" fill="${cta}" />
+          <circle cx="308" cy="214" r="5" fill="${cta}" />
+          <rect x="182" y="108" width="116" height="18" rx="6" fill="${cta}" />
+          <rect x="192" y="140" width="96" height="10" rx="5" fill="#FFFFFF" opacity="0.75" />
+          <rect x="202" y="160" width="76" height="10" rx="5" fill="#FFFFFF" opacity="0.5" />
+        `,
+        placas: `
+          <rect width="480" height="280" fill="${fun}" />
+          <rect x="35" y="28" width="410" height="224" rx="24" fill="${sec}" opacity="0.7" />
+          <rect x="92" y="72" width="296" height="92" rx="14" fill="${pri}" />
+          <rect x="118" y="100" width="170" height="16" rx="6" fill="#FFFFFF" />
+          <rect x="118" y="126" width="115" height="10" rx="5" fill="${cta}" />
+          <circle cx="342" cy="118" r="22" fill="${cta}" />
+          <rect x="128" y="176" width="224" height="54" rx="10" fill="#FFFFFF" stroke="${pri}" stroke-opacity="0.2" stroke-width="2" />
+          <rect x="212" y="188" width="56" height="42" rx="6" fill="${pri}" opacity="0.2" />
+        `,
+        uniformes: `
+          <rect width="480" height="280" fill="${fun}" />
+          <circle cx="240" cy="140" r="106" fill="${sec}" opacity="0.85" />
+          <path d="M180 76 L212 68 Q240 88 268 68 L300 76 L336 118 L306 142 L292 124 L292 216 L188 216 L188 124 L174 142 L144 118 Z"
+            fill="${pri}" />
+          <rect x="252" y="114" width="24" height="14" rx="4" fill="${cta}" />
+          <path d="M214 70 Q240 94 266 70" fill="none" stroke="${cta}" stroke-width="3.5" stroke-linecap="round" />
+        `,
+        odonto: `
+          <rect width="480" height="280" fill="${fun}" />
+          <circle cx="240" cy="140" r="100" fill="${sec}" opacity="0.85" />
+          <path d="M192 98 C192 78, 224 76, 240 92 C256 76, 288 78, 288 98 C288 134, 272 192, 258 192 C248 192, 246 158, 240 158 C234 158, 232 192, 222 192 C208 192, 192 134, 192 98 Z"
+            fill="#FFFFFF" stroke="${pri}" stroke-width="3.5" />
+          <circle cx="308" cy="86" r="10" fill="${cta}" />
+          <circle cx="170" cy="184" r="6" fill="${cta}" opacity="0.7" />
+        `,
+        advocacia: `
+          <rect width="480" height="280" fill="${fun}" />
+          <rect x="42" y="30" width="396" height="220" rx="24" fill="${sec}" opacity="0.7" />
+          <line x1="240" y1="68" x2="240" y2="206" stroke="${pri}" stroke-width="4.5" stroke-linecap="round" />
+          <line x1="150" y1="100" x2="330" y2="100" stroke="${cta}" stroke-width="4" stroke-linecap="round" />
+          <path d="M150 100 L126 156 L174 156 Z" fill="none" stroke="${pri}" stroke-width="3" stroke-linejoin="round" />
+          <path d="M330 100 L306 156 L354 156 Z" fill="none" stroke="${pri}" stroke-width="3" stroke-linejoin="round" />
+          <rect x="196" y="204" width="88" height="12" rx="6" fill="${pri}" />
+        `,
+        estetica: `
+          <rect width="480" height="280" fill="${fun}" />
+          <circle cx="240" cy="145" r="98" fill="${sec}" opacity="0.85" />
+          <path d="M240 76 C268 112, 268 164, 240 198 C212 164, 212 112, 240 76 Z" fill="${cta}" opacity="0.9" />
+          <path d="M240 194 C282 174, 304 134, 294 102 C264 114, 246 146, 240 194 Z" fill="${pri}" opacity="0.75" />
+          <path d="M240 194 C198 174, 176 134, 186 102 C216 114, 234 146, 240 194 Z" fill="${pri}" opacity="0.75" />
+        `,
+        padrao_generico: `
+          <rect width="480" height="280" fill="${fun}" />
+          <circle cx="355" cy="75" r="78" fill="${sec}" opacity="0.85" />
+          <circle cx="115" cy="220" r="68" fill="${cta}" opacity="0.2" />
+          <rect x="85" y="64" width="310" height="152" rx="22" fill="#FFFFFF" stroke="${pri}" stroke-opacity="0.16" stroke-width="2" />
+          <rect x="115" y="96" width="110" height="16" rx="8" fill="${pri}" />
+          <rect x="115" y="126" width="230" height="10" rx="5" fill="${txt}" opacity="0.25" />
+          <rect x="115" y="148" width="185" height="10" rx="5" fill="${txt}" opacity="0.18" />
+          <circle cx="348" cy="108" r="20" fill="${cta}" />
+        `
+      };
+
+      const corpo = cenas[tema] || cenas.padrao_generico;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="xMidYMid slice" class="w-full h-full block">${corpo}</svg>`;
+    }
+
+    function normalizarEstruturaSite(cfg) {
+      if (!cfg) return cfg;
+      (cfg.subdivisoes || []).forEach(sec => {
+        if (typeof sec.usarImagem !== "boolean") {
+          sec.usarImagem = sec.tipo === "hero" || sec.tipo === "sobre" || sec.tipo === "faixa" || !!sec.foto;
+        }
+        if (!sec.fonteImagem) {
+          sec.fonteImagem = sec.foto ? "upload" : "padrao";
+        }
+        if (!sec.imagemPadraoTema) {
+          sec.imagemPadraoTema = identificarTemaIlustracao(sec.titulo, sec.tipo);
+        }
+        (sec.itens || []).forEach(it => {
+          if (typeof it.usarImagem !== "boolean") {
+            it.usarImagem = true;
+          }
+          if (!it.fonteImagem) {
+            it.fonteImagem = it.foto ? "upload" : "padrao";
+          }
+          if (!it.imagemPadraoTema) {
+            it.imagemPadraoTema = identificarTemaIlustracao(it.titulo, "item");
+          }
+        });
+      });
+      return cfg;
+    }
+
+    // =========================================================================
+    // 5. DADOS INICIAIS (SITES, TEMPLATES DE CORES, AUTH E INTEGRACOES)
+    // =========================================================================
+    const TEMPLATES_COR_PADRAO = [
+      { id: "tpl-terroso-acolhedor", nome: "Terroso Acolhedor", padrao: true, cores: { primaria: "#76513F", secundaria: "#E8D9C7", fundo: "#F8F5EF", destaqueCta: "#C5A46D", texto: "#3B2B23" } },
+      { id: "tpl-executivo-marinho", nome: "Executivo Marinho", padrao: true, cores: { primaria: "#0F172A", secundaria: "#E2E8F0", fundo: "#F8FAFC", destaqueCta: "#F59E0B", texto: "#1E293B" } },
+      { id: "tpl-botanico-sereno", nome: "Botânico Sereno", padrao: true, cores: { primaria: "#2D4F3E", secundaria: "#E4EFE7", fundo: "#F7FAF8", destaqueCta: "#5B8E55", texto: "#1F3328" } },
+      { id: "tpl-grafite-ouro", nome: "Grafite & Ouro", padrao: true, cores: { primaria: "#1C1917", secundaria: "#E7E5E4", fundo: "#FAFAF9", destaqueCta: "#B45309", texto: "#292524" } },
+      { id: "tpl-minimalista-rose", nome: "Minimalista Rosé", padrao: true, cores: { primaria: "#6D3B47", secundaria: "#F5E6E8", fundo: "#FDF9FA", destaqueCta: "#C97B84", texto: "#3D2229" } }
+    ];
+
+    function getSitesIniciais() {
+      return {
+        "aline-aguiar": {
+          siteId: "aline-aguiar",
+          dominio: "",
+          paletaTemplateId: "tpl-terroso-acolhedor",
+          paletaTemplateNome: "Terroso Acolhedor",
+          atualizadoEm: new Date().toLocaleString("pt-BR"),
+          identidade: {
+            titulo: "Aline Aguiar — Psicanalista",
+            logoClara: "",
+            logoEscura: "",
+            cabecalhoFixoCompacto: true,
+            botoesPulsantes: true
+          },
+          paleta: {
+            primaria: "#76513F",
+            secundaria: "#E8D9C7",
+            fundo: "#F8F5EF",
+            destaqueCta: "#C5A46D",
+            texto: "#3B2B23"
+          },
+          contatoPadrao: {
+            whatsapp: "5522992511834",
+            mensagemPadrao: "Olá, Aline! Vim pelo site e gostaria de agendar uma sessão.",
+            instagram: "@Alineaguiar-psi",
+            botaoFlutuante: true
+          },
+          subdivisoes: [
+            {
+              id: "hero",
+              tipo: "hero",
+              menuLabel: "Início",
+              titulo: "Um espaço seguro de escuta, acolhimento e autoconhecimento.",
+              subtitulo: "Atendimento psicanalítico online e presencial para ajudar você a atravessar angústias, ansiedade e conflitos internos.",
+              colunas: 2,
+              foto: "",
+              usarImagem: true,
+              fonteImagem: "padrao",
+              imagemPadraoTema: "hero_psicanalise",
+              itens: [],
+              whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Agendar Atendimento Online", mensagem: "Olá, Aline! Gostaria de agendar um Atendimento Online." }
+            },
+            {
+              id: "dores",
+              tipo: "grade",
+              menuLabel: "Quando procurar",
+              titulo: "Talvez você esteja aqui porque...",
+              subtitulo: "Você não precisa carregar tudo sozinho(a).",
+              colunas: 3,
+              foto: "",
+              usarImagem: false,
+              fonteImagem: "padrao",
+              imagemPadraoTema: "padrao_generico",
+              itens: [
+                { titulo: "Ansiedade constante", descricao: "Pensamentos acelerados e sensação de sobrecarga no dia a dia.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "ansiedade", whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "", mensagem: "" } },
+                { titulo: "Conflitos nos relacionamentos", descricao: "Dificuldade em impor limites ou padrões que sempre se repetem.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "relacionamentos", whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "", mensagem: "" } },
+                { titulo: "Esgotamento emocional", descricao: "Cansaço profundo e dificuldade de encontrar sentido na rotina.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "esgotamento", whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "", mensagem: "" } }
+              ],
+              whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Agendar Atendimento Presencial", mensagem: "Olá, Aline! Gostaria de agendar um Atendimento Presencial." }
+            },
+            {
+              id: "faixa",
+              tipo: "faixa",
+              menuLabel: "",
+              titulo: "Falar é o primeiro passo para transformar o que dói em compreensão.",
+              subtitulo: "Escuta clínica ética, sigilosa e sem julgamentos.",
+              colunas: 1,
+              foto: "",
+              usarImagem: true,
+              fonteImagem: "padrao",
+              imagemPadraoTema: "faixa_transformacao",
+              itens: [],
+              whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Conversar no WhatsApp", mensagem: "Olá, Aline! Quero tirar uma dúvida sobre as sessões." }
+            },
+            {
+              id: "sobre",
+              tipo: "sobre",
+              menuLabel: "Sobre",
+              titulo: "Sobre Aline Aguiar",
+              subtitulo: "Psicanalista clínica dedicada a oferecer uma escuta acolhedora e profunda, respeitando o tempo e a singularidade de cada história.",
+              colunas: 2,
+              foto: "",
+              usarImagem: true,
+              fonteImagem: "padrao",
+              imagemPadraoTema: "sobre_psicanalise",
+              itens: [],
+              whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "", mensagem: "" }
+            }
+          ],
+          rodape: {
+            texto: "Escuta • Compreensão • Autoconhecimento",
+            endereco: "Atendimento Online e Presencial — Macaé/RJ",
+            copyright: "© 2026 Aline Aguiar — Psicanalista"
+          }
+        },
+        "gm-grafica": {
+          siteId: "gm-grafica",
+          dominio: "gmgraficaminister.com.br",
+          paletaTemplateId: "tpl-executivo-marinho",
+          paletaTemplateNome: "Executivo Marinho",
+          atualizadoEm: new Date().toLocaleString("pt-BR"),
+          identidade: {
+            titulo: "GM Gráfica Minister",
+            logoClara: "",
+            logoEscura: "",
+            cabecalhoFixoCompacto: true,
+            botoesPulsantes: true
+          },
+          paleta: {
+            primaria: "#0F172A",
+            secundaria: "#E2E8F0",
+            fundo: "#F8FAFC",
+            destaqueCta: "#F59E0B",
+            texto: "#1E293B"
+          },
+          contatoPadrao: {
+            whatsapp: "5522999994805",
+            mensagemPadrao: "Olá! Vim pelo site e quero pedir um orçamento.",
+            instagram: "@gmgraficaminister",
+            botaoFlutuante: true
+          },
+          subdivisoes: [
+            {
+              id: "hero-gm",
+              tipo: "hero",
+              menuLabel: "Início",
+              titulo: "Impressão e Comunicação Visual de Alto Impacto",
+              subtitulo: "Do panfleto à fachada da sua empresa. Situados no Lagomar, atendemos Macaé e Região.",
+              colunas: 2,
+              foto: "",
+              usarImagem: true,
+              fonteImagem: "padrao",
+              imagemPadraoTema: "hero_grafica",
+              itens: [],
+              whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Fazer Orçamento Agora", mensagem: "Olá! Vim pelo site e quero pedir um orçamento." }
+            },
+            {
+              id: "servicos-gm",
+              tipo: "grade",
+              menuLabel: "Serviços",
+              titulo: "Nossos Serviços",
+              subtitulo: "Atendemos pessoas físicas e empresas com produção ágil.",
+              colunas: 3,
+              foto: "",
+              usarImagem: false,
+              fonteImagem: "padrao",
+              imagemPadraoTema: "padrao_generico",
+              itens: [
+                { titulo: "Banners e Lonas", descricao: "Lonas com ilhós e banners com cordinha em diversos tamanhos.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "banners", whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Orçar Banners", mensagem: "Olá! Quero pedir um orçamento para Banners / Lonas." } },
+                { titulo: "Placas em PVC e Fachadas", descricao: "Sinalização profissional para comércios e empresas.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "placas", whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Orçar Placas", mensagem: "Olá! Quero pedir um orçamento para Fachadas e Sinalização." } },
+                { titulo: "Uniformes Profissionais", descricao: "Padronize sua equipe com conforto e durabilidade.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "uniformes", whatsapp: { ativo: true, usarPadrao: false, numeroCustom: "5522999990000", textoBotao: "Falar com Setor", mensagem: "Olá! Quero falar com o setor de Uniformes Profissionais." } }
+              ],
+              whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Consultar Outro Serviço", mensagem: "Olá! Quero consultar a disponibilidade de um serviço específico." }
+            }
+          ],
+          rodape: {
+            texto: "Comunicação Visual e Impressão Rápida — Criação de arte sob consulta.",
+            endereco: "Lagomar — Atendemos Macaé e Região/RJ",
+            copyright: "© 2026 GM Gráfica Minister"
+          }
+        }
+      };
+    }
+
+    function getSitesDB() {
+      const raw = safeStorage.get(KEYS.SITES);
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+      const inicial = getSitesIniciais();
+      safeStorage.set(KEYS.SITES, JSON.stringify(inicial));
+      return inicial;
+    }
+
+    function setSitesDB(db) {
+      safeStorage.set(KEYS.SITES, JSON.stringify(db));
+    }
+
+    function getAuthDB() {
+      const raw = safeStorage.get(KEYS.AUTH);
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+      const hashPadrao = hashSenha(SENHA_PADRAO_INICIAL);
+      const db = {
+        admin: {
+          chave: ADMIN_CHAVE_PADRAO,
+          senhaHash: hashPadrao,
+          mustChange: true
+        },
+        clientes: {
+          "aline-aguiar": { senhaHash: hashPadrao, mustChange: true },
+          "gm-grafica": { senhaHash: hashPadrao, mustChange: true }
+        }
+      };
+      safeStorage.set(KEYS.AUTH, JSON.stringify(db));
+      return db;
+    }
+
+    function setAuthDB(db) {
+      safeStorage.set(KEYS.AUTH, JSON.stringify(db));
+    }
+
+    function getLogsDB() {
+      const raw = safeStorage.get(KEYS.LOGS);
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+      return [];
+    }
+
+    function setLogsDB(logs) {
+      safeStorage.set(KEYS.LOGS, JSON.stringify(logs));
+    }
+
+    function getTemplatesCorDB() {
+      const raw = safeStorage.get(KEYS.TEMPLATES);
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+      safeStorage.set(KEYS.TEMPLATES, JSON.stringify(TEMPLATES_COR_PADRAO));
+      return JSON.parse(JSON.stringify(TEMPLATES_COR_PADRAO));
+    }
+
+    function setTemplatesCorDB(list) {
+      safeStorage.set(KEYS.TEMPLATES, JSON.stringify(list));
+    }
+
+    function getIntegracoesDB() {
+      const raw = safeStorage.get(KEYS.INTEGRACOES);
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+      return {
+        geminiApiKey: "",
+        geminiModelo: "gemini-2.5-flash",
+        urlSitePublico: "https://seu-site-publico.pages.dev",
+        instrucoesGlobais: "Escreva textos persuasivos, elegantes e objetivos em português do Brasil."
+      };
+    }
+
+    function setIntegracoesDB(cfg) {
+      safeStorage.set(KEYS.INTEGRACOES, JSON.stringify(cfg));
+    }
+
+    function getPortalConfigPadrao() {
+      return {
+        marcaNome: "WebPanel",
+        marcaDestaque: "Pro",
+        subtituloHeader: "Portal Oficial do Cliente",
+        logoUrl: "",
+        corEscura: "#0B0F19",
+        corAcento: "#4F46E5",
+        corFundo: "#F8FAFC",
+        heroBadge: "Infraestrutura Global Cloudflare • Atualização em Tempo Real",
+        heroTitulo: "Gerencie seu site com autonomia total e segurança profissional.",
+        heroDescricao: "Atualize logos, paleta de cores, textos das seções contratadas, fotos, ilustrações e links de WhatsApp em segundos — direto do celular ou computador, sem depender de código.",
+        categoriasTitulo: "Tudo o que você controla no seu painel",
+        categoriasSubtitulo: "Interface limpa e intuitiva pensada para atualizações rápidas no dia a dia.",
+        rodapeTagline: "• Gestão Profissional de Sites",
+        rodapeInfra: "Hospedagem & Segurança via Cloudflare Edge",
+        rodapeCopyright: "© 2026 WebPanel Pro",
+        categorias: [
+          { id: "cat-1", ativa: true, icone: "🖼️", titulo: "Identidade & Logos", descricao: "Atualize o título principal, envie sua logo clara para o topo e a versão branca para o rodapé com prévia imediata." },
+          { id: "cat-2", ativa: true, icone: "🎨", titulo: "Paleta de Cores Harmônica", descricao: "Escolha entre combinações profissionais prontas ou personalize cada cor da sua marca com prévia ao vivo." },
+          { id: "cat-3", ativa: true, icone: "✏️", titulo: "Textos & Seções Contratadas", descricao: "Edite títulos, descrições e itens das seções do seu site mantendo o layout profissional sempre alinhado." },
+          { id: "cat-4", ativa: true, icone: "📸", titulo: "Fotos & Ilustrações", descricao: "Use ilustrações profissionais prontas na paleta do seu site ou envie suas próprias fotos com armazenamento seguro." },
+          { id: "cat-5", ativa: true, icone: "💬", titulo: "WhatsApp Inteligente", descricao: "Configure seu número padrão, botão flutuante e mensagens personalizadas para cada botão ou serviço do site." },
+          { id: "cat-6", ativa: true, icone: "👁️", titulo: "Prévia Real em 3 Telas", descricao: "Visualize exatamente como o seu site publicado está aparecendo no Computador, Tablet e Celular após salvar." }
+        ]
+      };
+    }
+
+    function getPortalConfigDB() {
+      const raw = safeStorage.get(KEYS.PORTAL_CONFIG);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          return { ...getPortalConfigPadrao(), ...parsed, categorias: Array.isArray(parsed.categorias) ? parsed.categorias : getPortalConfigPadrao().categorias };
+        } catch (e) {}
+      }
+      const padrao = getPortalConfigPadrao();
+      safeStorage.set(KEYS.PORTAL_CONFIG, JSON.stringify(padrao));
+      return padrao;
+    }
+
+    function setPortalConfigDB(cfg) {
+      safeStorage.set(KEYS.PORTAL_CONFIG, JSON.stringify(cfg));
+    }
+
+    function aplicarPersonalizacaoPainel(cfgOpt) {
+      const cfg = cfgOpt || getPortalConfigDB();
+      const root = document.documentElement.style;
+      root.setProperty("--panel-dark", cfg.corEscura || "#0B0F19");
+      root.setProperty("--panel-accent", cfg.corAcento || "#4F46E5");
+      root.setProperty("--panel-bg", cfg.corFundo || "#F8FAFC");
+
+      const nomeCompleto = `${cfg.marcaNome || "WebPanel"} ${cfg.marcaDestaque || ""}`.trim();
+      document.title = `${nomeCompleto} — Gestão Profissional de Sites`;
+
+      const defaultSvg = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l9 4.5-9 4.5-9-4.5L12 3z" /><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9 4.5 9-4.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5L12 21l9-4.5" /></svg>`;
+      const logoMarkup = cfg.logoUrl
+        ? `<img src="${esc(cfg.logoUrl)}" alt="${esc(nomeCompleto)}" class="w-full h-full object-contain p-1 bg-white" />`
+        : defaultSvg;
+
+      const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+      setHtml("pub-brand-logo-wrap", logoMarkup);
+      setHtml("pub-footer-logo-wrap", logoMarkup);
+      setHtml("sidebar-brand-logo-wrap", logoMarkup);
+
+      setTxt("pub-brand-name", cfg.marcaNome || "WebPanel");
+      setTxt("pub-brand-accent", cfg.marcaDestaque || "");
+      setTxt("pub-brand-sub", cfg.subtituloHeader || "Portal Oficial do Cliente");
+      setTxt("pub-footer-brand", nomeCompleto);
+      setTxt("pub-footer-tagline", cfg.rodapeTagline || "");
+      setTxt("pub-footer-edge", cfg.rodapeInfra || "");
+      setTxt("pub-footer-copy", cfg.rodapeCopyright || "");
+      setTxt("sidebar-brand-name", nomeCompleto);
+      setTxt("mobile-drawer-brand", nomeCompleto);
+
+      setTxt("pub-hero-badge", cfg.heroBadge || "");
+      setTxt("pub-hero-title", cfg.heroTitulo || "");
+      setTxt("pub-hero-desc", cfg.heroDescricao || "");
+      setTxt("pub-cat-title", cfg.categoriasTitulo || "");
+      setTxt("pub-cat-sub", cfg.categoriasSubtitulo || "");
+
+      const grid = document.getElementById("pub-cat-grid");
+      if (grid) {
+        const ativas = (cfg.categorias || []).filter(c => c.ativa !== false);
+        grid.innerHTML = ativas.map(c => `
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 text-xl" style="background:${esc(cfg.corAcento || "#4F46E5")}18; color:${esc(cfg.corAcento || "#4F46E5")};">
+              ${esc(c.icone || "✨")}
+            </div>
+            <h3 class="font-bold text-slate-900 text-base">${esc(c.titulo || "")}</h3>
+            <p class="mt-2 text-sm text-slate-600 leading-relaxed">${esc(c.descricao || "")}</p>
+          </div>
+        `).join("");
+      }
+    }
+
+    // =========================================================================
+    // 6. NOTIFICAÇÕES TOAST & AUDITORIA (LOGS COM ANTES VS DEPOIS)
+    // =========================================================================
+    function mostrarToast(msg, tipo = "ok") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const cores = {
+        ok: "bg-enterprise text-white border-slate-700",
+        erro: "bg-rose-600 text-white border-rose-700",
+        info: "bg-indigo-600 text-white border-indigo-700"
+      };
+      const el = document.createElement("div");
+      el.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs font-semibold transition-all ${cores[tipo] || cores.ok}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = "0";
+        el.style.transform = "translateY(-6px)";
+        setTimeout(() => el.remove(), 250);
+      }, 3200);
+    }
+
+    function registrarAuditoria({ tipo, siteId, resumo, mudancas = [], privacidadeSenha = false }) {
+      const logs = getLogsDB();
+      logs.unshift({
+        id: "LOG-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+        dataHora: new Date().toLocaleString("pt-BR"),
+        ator: sessaoAtual ? (sessaoAtual.role === "admin" ? "ADMIN-MASTER" : sessaoAtual.user) : "SISTEMA",
+        role: sessaoAtual?.role === "admin" ? "Admin" : "Cliente",
+        siteId: siteId || "-",
+        tipo,
+        resumo,
+        mudancas,
+        privacidadeSenha
+      });
+      setLogsDB(logs.slice(0, 300));
+    }
+
+    function calcularDiffSite(antesRaw, depoisRaw) {
+      const mudancas = [];
+      const antes = antesRaw ? normalizarEstruturaSite(JSON.parse(JSON.stringify(antesRaw))) : null;
+      const depois = normalizarEstruturaSite(JSON.parse(JSON.stringify(depoisRaw)));
+
+      const formatarVal = (v) => {
+        if (v === undefined || v === null || v === "") return "(vazio)";
+        if (typeof v === "boolean") return v ? "Ativado" : "Desativado";
+        if (typeof v === "string" && (v.startsWith("data:image") || v.startsWith("/api/img/"))) return "[Imagem]";
+        return String(v);
+      };
+
+      const comparar = (campo, vA, vD) => {
+        const sA = String(vA ?? "");
+        const sD = String(vD ?? "");
+        if (sA === sD) return;
+        const ehImgA = sA.startsWith("data:image") || sA.startsWith("/api/img/");
+        const ehImgD = sD.startsWith("data:image") || sD.startsWith("/api/img/");
+        if (ehImgA && ehImgD) {
+          mudancas.push({ campo, antes: "[Imagem anterior]", depois: "[Nova imagem substituída]" });
+          return;
+        }
+        mudancas.push({ campo, antes: formatarVal(vA), depois: formatarVal(vD) });
+      };
+
+      if (!antes) {
+        mudancas.push({ campo: "Criação de Site", antes: "(inexistente)", depois: `Site "${depois.siteId}" criado` });
+        return mudancas;
+      }
+
+      comparar("Identidade > Slug / ID do Site", antes.siteId, depois.siteId);
+      comparar("Identidade > Domínio", antes.dominio, depois.dominio);
+      comparar("Identidade > Título", antes.identidade?.titulo, depois.identidade?.titulo);
+      comparar("Identidade > Logo Clara", antes.identidade?.logoClara, depois.identidade?.logoClara);
+      comparar("Identidade > Logo Branca", antes.identidade?.logoEscura, depois.identidade?.logoEscura);
+      comparar("Identidade > Cabeçalho Compacto", antes.identidade?.cabecalhoFixoCompacto, depois.identidade?.cabecalhoFixoCompacto);
+      comparar("Identidade > Botões Pulsantes", antes.identidade?.botoesPulsantes, depois.identidade?.botoesPulsantes);
+
+      comparar("Paleta > Template", antes.paletaTemplateNome || "Cor Avulsa", depois.paletaTemplateNome || "Cor Avulsa");
+      comparar("Paleta > Primária", antes.paleta?.primaria, depois.paleta?.primaria);
+      comparar("Paleta > Secundária", antes.paleta?.secundaria, depois.paleta?.secundaria);
+      comparar("Paleta > Fundo", antes.paleta?.fundo, depois.paleta?.fundo);
+      comparar("Paleta > Destaque (CTA)", antes.paleta?.destaqueCta, depois.paleta?.destaqueCta);
+      comparar("Paleta > Cor do Texto", antes.paleta?.texto, depois.paleta?.texto);
+
+      comparar("Contato > WhatsApp Padrão", antes.contatoPadrao?.whatsapp, depois.contatoPadrao?.whatsapp);
+      comparar("Contato > Mensagem Padrão", antes.contatoPadrao?.mensagemPadrao, depois.contatoPadrao?.mensagemPadrao);
+      comparar("Contato > Instagram", antes.contatoPadrao?.instagram, depois.contatoPadrao?.instagram);
+      comparar("Contato > Botão Flutuante", antes.contatoPadrao?.botaoFlutuante, depois.contatoPadrao?.botaoFlutuante);
+
+      const sAntes = antes.subdivisoes || [];
+      const sDepois = depois.subdivisoes || [];
+      const maxS = Math.max(sAntes.length, sDepois.length);
+      for (let i = 0; i < maxS; i++) {
+        const sA = sAntes[i];
+        const sD = sDepois[i];
+        const prefix = `Seção #${i + 1} (${sD?.titulo || sA?.titulo || "Seção"})`;
+        if (!sA && sD) {
+          mudancas.push({ campo: prefix, antes: "(removida/inexistente)", depois: `Nova seção tipo "${sD.tipo}"` });
+          continue;
+        }
+        if (sA && !sD) {
+          mudancas.push({ campo: prefix, antes: `Seção "${sA.titulo}"`, depois: "(removida)" });
+          continue;
+        }
+        comparar(`${prefix} > Tipo`, sA.tipo, sD.tipo);
+        comparar(`${prefix} > Colunas`, sA.colunas, sD.colunas);
+        comparar(`${prefix} > Nome no Menu`, sA.menuLabel, sD.menuLabel);
+        comparar(`${prefix} > Título`, sA.titulo, sD.titulo);
+        comparar(`${prefix} > Subtítulo/Texto`, sA.subtitulo, sD.subtitulo);
+        comparar(`${prefix} > Exibir Imagem`, sA.usarImagem, sD.usarImagem);
+        comparar(`${prefix} > Origem da Imagem`, sA.fonteImagem === "upload" ? "Upload Personalizado" : "Imagem Padrão", sD.fonteImagem === "upload" ? "Upload Personalizado" : "Imagem Padrão");
+        comparar(`${prefix} > Foto`, sA.foto, sD.foto);
+        comparar(`${prefix} > WhatsApp Ativo`, sA.whatsapp?.ativo, sD.whatsapp?.ativo);
+        comparar(`${prefix} > WhatsApp Usar Padrão`, sA.whatsapp?.usarPadrao, sD.whatsapp?.usarPadrao);
+        comparar(`${prefix} > WhatsApp Número Custom`, sA.whatsapp?.numeroCustom, sD.whatsapp?.numeroCustom);
+        comparar(`${prefix} > WhatsApp Texto Botão`, sA.whatsapp?.textoBotao, sD.whatsapp?.textoBotao);
+        comparar(`${prefix} > WhatsApp Mensagem`, sA.whatsapp?.mensagem, sD.whatsapp?.mensagem);
+
+        const itAntes = sA.itens || [];
+        const itDepois = sD.itens || [];
+        const maxI = Math.max(itAntes.length, itDepois.length);
+        for (let j = 0; j < maxI; j++) {
+          const itA = itAntes[j];
+          const itD = itDepois[j];
+          const pItem = `${prefix} > Item #${j + 1}`;
+          if (!itA && itD) {
+            mudancas.push({ campo: pItem, antes: "(inexistente)", depois: `Item "${itD.titulo}" adicionado` });
+            continue;
+          }
+          if (itA && !itD) {
+            mudancas.push({ campo: pItem, antes: `Item "${itA.titulo}"`, depois: "(removido)" });
+            continue;
+          }
+          comparar(`${pItem} > Título`, itA.titulo, itD.titulo);
+          comparar(`${pItem} > Descrição`, itA.descricao, itD.descricao);
+          comparar(`${pItem} > Exibir Imagem`, itA.usarImagem, itD.usarImagem);
+          comparar(`${pItem} > Origem da Imagem`, itA.fonteImagem === "upload" ? "Upload Personalizado" : "Imagem Padrão", itD.fonteImagem === "upload" ? "Upload Personalizado" : "Imagem Padrão");
+          comparar(`${pItem} > Foto`, itA.foto, itD.foto);
+          comparar(`${pItem} > WhatsApp Ativo`, itA.whatsapp?.ativo, itD.whatsapp?.ativo);
+          comparar(`${pItem} > WhatsApp Usar Padrão`, itA.whatsapp?.usarPadrao, itD.whatsapp?.usarPadrao);
+          comparar(`${pItem} > WhatsApp Número Custom`, itA.whatsapp?.numeroCustom, itD.whatsapp?.numeroCustom);
+          comparar(`${pItem} > WhatsApp Texto Botão`, itA.whatsapp?.textoBotao, itD.whatsapp?.textoBotao);
+          comparar(`${pItem} > WhatsApp Mensagem`, itA.whatsapp?.mensagem, itD.whatsapp?.mensagem);
+        }
+      }
+
+      comparar("Rodapé > Texto Institucional", antes.rodape?.texto, depois.rodape?.texto);
+      comparar("Rodapé > Endereço/Região", antes.rodape?.endereco, depois.rodape?.endereco);
+      comparar("Rodapé > Copyright", antes.rodape?.copyright, depois.rodape?.copyright);
+      return mudancas;
+    }
+
+    // =========================================================================
+    // 7. AUTENTICAÇÃO, SESSÃO PERSISTENTE (12H) E GATILHOS OCULTOS DO ADMIN
+    // =========================================================================
+    function isAdmin() { return sessaoAtual && sessaoAtual.role === "admin"; }
+
+    function abrirModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("hidden");
+    }
+
+    function fecharModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("hidden");
+    }
+
+    function salvarSessao(s) {
+      sessaoAtual = s;
+      const exp = Date.now() + SESSION_TTL_MS;
+      const payload = { ...s, exp };
+      payload.sig = sha256PureJS("SIG_WP26:" + payload.role + ":" + payload.user + ":" + payload.exp);
+      safeStorage.set(KEYS.SESSION, JSON.stringify(payload));
+    }
+
+    function restaurarSessaoSeValida() {
+      const raw = safeStorage.get(KEYS.SESSION);
+      if (!raw) return false;
+      try {
+        const s = JSON.parse(raw);
+        if (!s || !s.exp || Date.now() > s.exp) {
+          safeStorage.remove(KEYS.SESSION);
+          return false;
+        }
+        const expected = sha256PureJS("SIG_WP26:" + s.role + ":" + s.user + ":" + s.exp);
+        if (s.sig !== expected) {
+          safeStorage.remove(KEYS.SESSION);
+          return false;
+        }
+        sessaoAtual = s;
+        const auth = getAuthDB();
+        const mustChange = s.role === "admin"
+          ? !!auth.admin.mustChange
+          : !!(auth.clientes[s.user] && auth.clientes[s.user].mustChange);
+
+        iniciarWorkspaceAutenticado();
+        if (mustChange) abrirModal("modal-trocar-senha");
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function fazerLogout() {
+      safeStorage.remove(KEYS.SESSION);
+      sessaoAtual = null;
+      siteAtual = null;
+      temAlteracoesPendentes = false;
+      document.getElementById("app-workspace").classList.add("hidden");
+      document.getElementById("public-landing").classList.remove("hidden");
+      window.scrollTo(0, 0);
+      mostrarToast("Você saiu da sua conta com segurança.", "info");
+    }
+
+    function verificarBloqueioForcaBruta(tipo, erroEl) {
+      const t = tentativasLogin[tipo];
+      if (Date.now() < t.until) {
+        const seg = Math.ceil((t.until - Date.now()) / 1000);
+        erroEl.textContent = `Muitas tentativas incorretas. Aguarde ${seg}s para tentar novamente.`;
+        erroEl.classList.remove("hidden");
+        return true;
+      }
+      return false;
+    }
+
+    function registrarFalhaLogin(tipo, erroEl, msg) {
+      const t = tentativasLogin[tipo];
+      t.count += 1;
+      if (t.count >= 5) {
+        t.until = Date.now() + 30000;
+        t.count = 0;
+        erroEl.textContent = "Limite de 5 tentativas excedido. Bloqueado por 30 segundos.";
+      } else {
+        erroEl.textContent = `${msg} (Tentativa ${t.count}/5)`;
+      }
+      erroEl.classList.remove("hidden");
+    }
+
+    function validarSenhaForte(s) {
+      return typeof s === "string" && s.length >= 8 && /[A-Za-z]/.test(s) && /[0-9]/.test(s) && /[^A-Za-z0-9]/.test(s);
+    }
+
+    // Gatilho de 5 cliques no Cabeçalho ou Rodapé (com vibração tátil + visual)
+    function configurarGatilhoAdmin5Cliques(el) {
+      if (!el) return;
+      let count = 0;
+      let lastTime = 0;
+      el.addEventListener("click", () => {
+        const now = Date.now();
+        if (now - lastTime > 2500) count = 0;
+        lastTime = now;
+        count += 1;
+
+        el.classList.remove("brand-vibrate");
+        void el.offsetWidth;
+        el.classList.add("brand-vibrate");
+        if (navigator.vibrate) navigator.vibrate(25);
+
+        if (count >= 5) {
+          count = 0;
+          if (navigator.vibrate) navigator.vibrate([60, 40, 100]);
+          document.getElementById("erro-login-admin").classList.add("hidden");
+          abrirModal("modal-login-admin");
+          setTimeout(() => document.getElementById("input-admin-chave").focus(), 80);
+        }
+      });
+    }
+
+    // =========================================================================
+    // 8. WORKSPACE, NAVEGAÇÃO (RESET DE SCROLL) E CARREGAMENTO DE SITES
+    // =========================================================================
+    function marcarPendente() {
+      temAlteracoesPendentes = true;
+      const dot = document.getElementById("dot-pendente");
+      if (dot) dot.classList.remove("hidden");
+    }
+
+    function carregarSiteNaMemoria(cfg, manterSnapshotBanco = false) {
+      siteAtual = normalizarEstruturaSite(JSON.parse(JSON.stringify(cfg)));
+      if (!manterSnapshotBanco) {
+        snapshotOriginalSite = JSON.parse(JSON.stringify(siteAtual));
+        temAlteracoesPendentes = false;
+        const dot = document.getElementById("dot-pendente");
+        if (dot) dot.classList.add("hidden");
+      } else {
+        const salvoNoBanco = getSitesDB()[cfg.siteId];
+        snapshotOriginalSite = salvoNoBanco ? normalizarEstruturaSite(JSON.parse(JSON.stringify(salvoNoBanco))) : null;
+        marcarPendente();
+      }
+      blocosAbertos = new Set(siteAtual.subdivisoes?.length ? [0] : []);
+      atualizarCabecalhoWorkspace();
+    }
+
+    function obterUrlDoSiteAtual() {
+      if (!siteAtual) return "";
+      const integracoes = getIntegracoesDB();
+      const base = (integracoes.urlSitePublico || "https://seu-site-publico.pages.dev").replace(/\/+$/, "");
+      const dom = (siteAtual.dominio || "").trim().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+      if (dom) return `https://${dom}`;
+      if (siteAtual.siteId) return `${base}/${siteAtual.siteId}`;
+      return "";
+    }
+
+    function atualizarCabecalhoWorkspace() {
+      if (!siteAtual) return;
+      document.getElementById("topbar-site-title").textContent = siteAtual.identidade?.titulo || siteAtual.siteId;
+      document.getElementById("topbar-user-sub").textContent = isAdmin()
+        ? `Admin Master • Editando: ${siteAtual.siteId}`
+        : `Conta do Cliente • ${siteAtual.siteId}`;
+
+      const url = obterUrlDoSiteAtual();
+      const btnAbrir = document.getElementById("btn-abrir-site");
+      const btnCopiar = document.getElementById("btn-copiar-link");
+      if (url) {
+        btnAbrir.href = url;
+        btnAbrir.classList.remove("hidden");
+        btnCopiar.classList.remove("hidden");
+      }
+    }
+
+    function popularSeletorSitesAdmin() {
+      if (!isAdmin()) return;
+      const db = getSitesDB();
+      const lista = Object.values(db);
+      const html = lista.map(s => `<option value="${esc(s.siteId)}" ${siteAtual && s.siteId === siteAtual.siteId ? "selected" : ""}>${esc(s.identidade?.titulo || s.siteId)} (${esc(s.siteId)})</option>`).join("");
+      document.getElementById("admin-site-select").innerHTML = html;
+      document.getElementById("mobile-admin-site-select").innerHTML = html;
+    }
+
+    function iniciarWorkspaceAutenticado() {
+      document.getElementById("public-landing").classList.add("hidden");
+      document.getElementById("app-workspace").classList.remove("hidden");
+
+      const adm = isAdmin();
+      document.getElementById("sidebar-role-badge").textContent = adm ? "Console Admin Master" : "Portal do Cliente";
+      document.getElementById("admin-sidebar-controls").classList.toggle("hidden", !adm);
+      document.getElementById("mobile-admin-controls").classList.toggle("hidden", !adm);
+
+      const db = getSitesDB();
+      const targetId = adm ? (Object.keys(db)[0] || "aline-aguiar") : sessaoAtual.user;
+      const cfg = db[targetId] || Object.values(db)[0];
+      carregarSiteNaMemoria(cfg, false);
+      if (adm) popularSeletorSitesAdmin();
+
+      renderizarMenus();
+      trocarAba("identidade");
+    }
+
+    function getAbasPermitidas() {
+      const base = [
+        { id: "identidade", label: "Identidade", short: "Identidade", icon: "🏷️" },
+        { id: "paleta", label: "Paleta de Cores", short: "Paleta", icon: "🎨" },
+        { id: "contato", label: "WhatsApp & Redes", short: "Contato", icon: "💬" },
+        { id: "conteudo", label: "Conteúdo do Site", short: "Conteúdo", icon: "🧩" },
+        { id: "rodape", label: "Rodapé", short: "Rodapé", icon: "🧾" },
+        { id: "previa", label: "Prévia do Site", short: "Prévia", icon: "👁️" }
+      ];
+      if (isAdmin()) {
+        base.push(
+          { id: "configuracoes", label: "Configurações", short: "Config", icon: "⚙️" },
+          { id: "logs", label: "Logs de Auditoria", short: "Logs", icon: "🛡️" }
+        );
+      }
+      return base;
+    }
+
+    function renderizarMenus() {
+      const abas = getAbasPermitidas();
+      const itemHtml = abas.map(a => `
+        <button type="button" onclick="window.trocarAba('${a.id}'); window.toggleMobileDrawer(false);"
+          class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${abaAtual === a.id ? "panel-bg-accent text-white shadow-sm" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}">
+          <span>${a.icon}</span>
+          <span class="truncate">${a.label}</span>
+        </button>
+      `).join("");
+
+      document.getElementById("sidebar-nav").innerHTML = itemHtml;
+      document.getElementById("mobile-drawer-nav").innerHTML = itemHtml;
+
+      const bottomAbas = abas.slice(0, 6);
+      document.getElementById("mobile-bottom-nav").innerHTML = bottomAbas.map(a => `
+        <button type="button" onclick="window.trocarAba('${a.id}')"
+          class="flex flex-col items-center justify-center py-1 px-1.5 rounded-lg min-w-0 flex-1 cursor-pointer ${abaAtual === a.id ? "text-indigo-600 font-bold" : "text-slate-500 font-medium"}">
+          <span class="text-base leading-none mb-0.5">${a.icon}</span>
+          <span class="text-[10px] truncate max-w-full">${a.short}</span>
+        </button>
+      `).join("");
+    }
+
+    function toggleMobileDrawer(abrir) {
+      document.getElementById("mobile-drawer").classList.toggle("hidden", !abrir);
+    }
+
+    function trocarAba(idAba, manterPosicao = false) {
+      if ((idAba === "configuracoes" || idAba === "logs") && !isAdmin()) return;
+      abaAtual = idAba;
+      renderizarMenus();
+
+      const container = document.getElementById("workspace-content");
+      if (idAba === "identidade") container.innerHTML = viewIdentidade();
+      else if (idAba === "paleta") container.innerHTML = viewPaleta();
+      else if (idAba === "contato") container.innerHTML = viewContato();
+      else if (idAba === "conteudo") container.innerHTML = viewConteudo();
+      else if (idAba === "rodape") container.innerHTML = viewRodape();
+      else if (idAba === "previa") {
+        container.innerHTML = viewPreviaSite();
+        setTimeout(() => montarIframePreviaSite(), 30);
+      } else if (idAba === "configuracoes") {
+        if (!portalConfigDraft) portalConfigDraft = JSON.parse(JSON.stringify(getPortalConfigDB()));
+        container.innerHTML = viewConfiguracoes();
+      } else if (idAba === "logs") container.innerHTML = viewLogs();
+
+      if (!manterPosicao) {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        const sc = document.getElementById("workspace-scroll-container");
+        if (sc) sc.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
+    }
+
+    // =========================================================================
+    // 9. VIEWS DO PAINEL (IDENTIDADE, PALETA, CONTATO, CONTEÚDO E RODAPÉ)
+    // =========================================================================
+    function viewIdentidade() {
+      const adm = isAdmin();
+      const id = siteAtual.identidade || {};
+      return `
+        <div class="space-y-5">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Identidade & Logos</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Configure o nome do site, logos e comportamento do cabeçalho.</p>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">ID / Slug do Site ${adm ? "" : "(Fixo)"}</label>
+                <input type="text" value="${esc(siteAtual.siteId)}" ${adm ? `oninput="window.atualizarSlugSite(this.value)"` : "disabled"}
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-mono ${adm ? "bg-white" : "bg-slate-100 text-slate-500"}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Domínio Próprio ${adm ? "(Opcional)" : "(Configurado pelo Admin)"}</label>
+                <input type="text" value="${esc(siteAtual.dominio || "")}" placeholder="ex: meusite.com.br" ${adm ? `oninput="siteAtual.dominio = this.value; window.marcarPendente(); window.atualizarCabecalhoWorkspace();"` : "disabled"}
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm ${adm ? "bg-white" : "bg-slate-100 text-slate-500"}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Título Principal do Site</label>
+                <input type="text" value="${esc(id.titulo || "")}" oninput="siteAtual.identidade.titulo = this.value; window.marcarPendente(); window.atualizarCabecalhoWorkspace();"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                  ${id.logoClara ? `<img src="${esc(id.logoClara)}" class="w-full h-full object-contain p-1" />` : `<span class="text-[10px] text-slate-400">Sem logo</span>`}
+                </div>
+                <div class="flex-1 min-w-0 w-full">
+                  <div class="text-xs font-bold text-slate-800 mb-1">Logo Principal (Topo / Fundo Claro)</div>
+                  <input type="file" accept="image/*" onchange="window.uploadLogoSite(this, 'logoClara')" class="text-xs max-w-full" />
+                  ${id.logoClara ? `<button type="button" onclick="siteAtual.identidade.logoClara=''; window.marcarPendente(); window.trocarAba('identidade', true);" class="block mt-1.5 text-[11px] font-semibold text-rose-600 cursor-pointer">Remover logo</button>` : ""}
+                </div>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center gap-4 text-white">
+                <div class="w-16 h-16 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                  ${id.logoEscura ? `<img src="${esc(id.logoEscura)}" class="w-full h-full object-contain p-1" />` : `<span class="text-[10px] text-slate-400">Sem logo</span>`}
+                </div>
+                <div class="flex-1 min-w-0 w-full">
+                  <div class="text-xs font-bold text-slate-200 mb-1">Logo Branca (Rodapé / Fundo Escuro)</div>
+                  <input type="file" accept="image/*" onchange="window.uploadLogoSite(this, 'logoEscura')" class="text-xs max-w-full text-slate-300" />
+                  ${id.logoEscura ? `<button type="button" onclick="siteAtual.identidade.logoEscura=''; window.marcarPendente(); window.trocarAba('identidade', true);" class="block mt-1.5 text-[11px] font-semibold text-rose-300 cursor-pointer">Remover logo</button>` : ""}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-6 pt-2 text-xs sm:text-sm text-slate-700">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" ${id.cabecalhoFixoCompacto !== false ? "checked" : ""} onchange="siteAtual.identidade.cabecalhoFixoCompacto = this.checked; window.marcarPendente();" class="rounded" />
+                Cabeçalho fixo que fica compacto ao rolar
+              </label>
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" ${id.botoesPulsantes !== false ? "checked" : ""} onchange="siteAtual.identidade.botoesPulsantes = this.checked; window.marcarPendente();" class="rounded" />
+                Botões de ação com efeito pulsante
+              </label>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewPaleta() {
+      const p = siteAtual.paleta || {};
+      const templates = getTemplatesCorDB();
+      const tplAtivo = siteAtual.paletaTemplateId || "avulsa";
+      const campos = [
+        { k: "primaria", nome: "Cor Primária", desc: "Títulos, cabeçalho e rodapé" },
+        { k: "secundaria", nome: "Cor Secundária", desc: "Cartões e destaque do Hero" },
+        { k: "fundo", nome: "Fundo da Página", desc: "Plano de fundo geral do site" },
+        { k: "destaqueCta", nome: "Destaque (CTA)", desc: "Botões de conversão e WhatsApp" },
+        { k: "texto", nome: "Cor do Texto", desc: "Parágrafos e descrições" }
+      ];
+
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Paleta de Cores Harmônica</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Escolha um template pronto, salve novas combinações ou use cores avulsas exclusivas deste site.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs font-semibold px-3 py-1.5 rounded-full ${tplAtivo === "avulsa" ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-indigo-50 text-indigo-700 border border-indigo-200"}">
+                Modo: ${esc(siteAtual.paletaTemplateNome || "Cor Avulsa")}
+              </span>
+              <button type="button" onclick="window.ativarCorAvulsa()" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
+                Usar Cor Avulsa
+              </button>
+              <button type="button" onclick="window.abrirModal('modal-novo-template-cor')" class="px-3.5 py-2 rounded-xl panel-bg-dark text-white text-xs font-semibold hover:opacity-90 cursor-pointer">
+                + Salvar como Template
+              </button>
+            </div>
+          </div>
+
+          <!-- Biblioteca de Templates -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Templates Prontos & Personalizados</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              ${templates.map(t => {
+                const selecionado = tplAtivo === t.id;
+                return `
+                  <div class="p-3.5 rounded-xl border transition ${selecionado ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/30" : "border-slate-200 hover:border-slate-300 bg-white"}">
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                      <span class="text-xs font-bold text-slate-800 truncate">${esc(t.nome)}</span>
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        ${!t.padrao ? `<button type="button" onclick="window.excluirTemplateCor('${esc(t.id)}')" class="text-[11px] text-rose-500 hover:text-rose-700 cursor-pointer" title="Excluir template">✕</button>` : ""}
+                        <button type="button" onclick="window.aplicarTemplateCor('${esc(t.id)}')"
+                          class="text-[11px] font-semibold px-2.5 py-1 rounded-lg cursor-pointer ${selecionado ? "bg-indigo-600 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}">
+                          ${selecionado ? "Ativo" : "Aplicar"}
+                        </button>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      ${["primaria", "secundaria", "fundo", "destaqueCta", "texto"].map(c => `
+                        <span class="h-6 flex-1 rounded-md border border-black/10" style="background:${esc(t.cores[c])}" title="${esc(t.cores[c])}"></span>
+                      `).join("")}
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+
+          <!-- Pickers + Prévia ao Vivo -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+              ${campos.map(c => `
+                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <input type="color" value="${esc(p[c.k] || "#000000")}"
+                      oninput="window.atualizarCor('${c.k}', this.value)"
+                      onchange="window.atualizarCor('${c.k}', this.value)"
+                      class="w-11 h-11 rounded-xl border border-slate-300 cursor-pointer bg-white p-0.5 shrink-0" />
+                    <div class="min-w-0">
+                      <div class="text-xs font-bold text-slate-900">${c.nome}</div>
+                      <div class="text-[11px] text-slate-500">${c.desc}</div>
+                    </div>
+                  </div>
+                  <input id="hex-${c.k}" type="text" value="${esc((p[c.k] || "#000000").toUpperCase())}"
+                    onchange="window.atualizarCorHex('${c.k}', this.value)"
+                    class="w-28 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-mono uppercase text-center" />
+                </div>
+              `).join("")}
+            </div>
+
+            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Prévia ao Vivo</span>
+                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Tempo Real</span>
+              </div>
+              <div class="rounded-2xl overflow-hidden border border-slate-200" style="background:${esc(p.fundo || "#F8FAFC")}; color:${esc(p.texto || "#1E293B")};">
+                <div class="bg-white px-4 py-3 flex items-center justify-between gap-2 border-b border-black/5">
+                  <strong class="text-xs truncate" style="color:${esc(p.primaria || "#0F172A")}">${esc(siteAtual.identidade?.titulo || "Meu Site")}</strong>
+                  <span class="text-[10px] opacity-60 shrink-0">Início • Serviços • Contato</span>
+                </div>
+                <div class="p-4">
+                  <div class="rounded-xl p-5 text-center" style="background:${esc(p.secundaria || "#E2E8F0")};">
+                    <div class="font-bold text-base leading-snug" style="color:${esc(p.primaria || "#0F172A")}">Identidade visual em harmonia</div>
+                    <p class="text-xs mt-2 opacity-85">As cores escolhidas ao lado são aplicadas instantaneamente em todo o seu site.</p>
+                    <div class="mt-4">
+                      <span class="inline-block px-5 py-2 rounded-full text-xs font-semibold text-white shadow-sm" style="background:${esc(p.destaqueCta || "#4F46E5")};">Falar no WhatsApp</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewContato() {
+      const c = siteAtual.contatoPadrao || {};
+      return `
+        <div class="space-y-5">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">WhatsApp Padrão & Redes Sociais</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Defina o número principal usado nos botões e a mensagem padrão de atendimento.</p>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Padrão (DDI + DDD + Número)</label>
+                <input type="text" value="${esc(c.whatsapp || "")}" placeholder="5522999999999"
+                  oninput="window.atualizarWhatsappPadrao(this.value)"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Instagram (Opcional)</label>
+                <input type="text" value="${esc(c.instagram || "")}" placeholder="@seuperfil"
+                  oninput="siteAtual.contatoPadrao.instagram = this.value; window.marcarPendente();"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Mensagem Padrão do Botão Flutuante</label>
+              <input type="text" value="${esc(c.mensagemPadrao || "")}" placeholder="Olá! Vim pelo site e gostaria de informações."
+                oninput="siteAtual.contatoPadrao.mensagemPadrao = this.value; window.marcarPendente();"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+            </div>
+            <label class="inline-flex items-center gap-2 text-xs sm:text-sm text-slate-700 cursor-pointer pt-1">
+              <input type="checkbox" ${c.botaoFlutuante !== false ? "checked" : ""}
+                onchange="siteAtual.contatoPadrao.botaoFlutuante = this.checked; window.marcarPendente();" class="rounded" />
+              Exibir botão flutuante do WhatsApp no canto inferior direito do site
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    function blocoWhatsAppEditorHTML(wObj, exprBase) {
+      const w = wObj || { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "", mensagem: "" };
+      return `
+        <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-2.5">
+          <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-emerald-900">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" ${w.ativo ? "checked" : ""} onchange="${exprBase}.ativo = this.checked; window.marcarPendente(); window.trocarAba('conteudo', true);" class="rounded" />
+              Ativar botão de WhatsApp aqui
+            </label>
+            ${w.ativo ? `
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" ${w.usarPadrao !== false ? "checked" : ""} onchange="${exprBase}.usarPadrao = this.checked; window.marcarPendente(); window.trocarAba('conteudo', true);" class="rounded" />
+                Usar WhatsApp Padrão
+              </label>
+            ` : ""}
+          </div>
+          ${w.ativo ? `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <input type="text" value="${esc(w.textoBotao || "")}" placeholder="Texto do botão"
+                oninput="${exprBase}.textoBotao = this.value; window.marcarPendente();"
+                class="rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs" />
+              <input type="text" value="${esc(w.mensagem || "")}" placeholder="Mensagem enviada ao clicar"
+                oninput="${exprBase}.mensagem = this.value; window.marcarPendente();"
+                class="rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs ${w.usarPadrao !== false ? "md:col-span-2" : ""}" />
+              ${w.usarPadrao === false ? `
+                <input type="text" value="${esc(w.numeroCustom || "")}" placeholder="Outro nº (5522999990000)"
+                  oninput="${exprBase}.numeroCustom = this.value.replace(/\\D/g,''); window.marcarPendente();"
+                  class="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs font-mono" />
+              ` : ""}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+
+    function viewConteudo() {
+      const adm = isAdmin();
+      const secs = siteAtual.subdivisoes || [];
+      const paleta = siteAtual.paleta || {};
+
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Conteúdo das Seções</h2>
+              <p class="text-xs text-slate-500 mt-0.5">${adm ? "Gerencie subdivisões, itens, ilustrações padrão/uploads e links de WhatsApp." : "Edite textos, imagens (padrão ou upload) e botões das seções contratadas do seu site."}</p>
+            </div>
+            ${adm ? `
+              <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="window.adminAddSubdivisao('hero')" class="text-xs font-semibold px-3 py-2 rounded-xl panel-bg-dark text-white cursor-pointer">+ Hero</button>
+                <button type="button" onclick="window.adminAddSubdivisao('grade')" class="text-xs font-semibold px-3 py-2 rounded-xl panel-bg-dark text-white cursor-pointer">+ Grade</button>
+                <button type="button" onclick="window.adminAddSubdivisao('faixa')" class="text-xs font-semibold px-3 py-2 rounded-xl panel-bg-dark text-white cursor-pointer">+ Faixa</button>
+                <button type="button" onclick="window.adminAddSubdivisao('sobre')" class="text-xs font-semibold px-3 py-2 rounded-xl panel-bg-dark text-white cursor-pointer">+ Sobre</button>
+              </div>
+            ` : ""}
+          </div>
+
+          <div class="space-y-4">
+            ${secs.map((sec, sIdx) => {
+              const aberto = blocosAbertos.has(sIdx);
+              const tipoNome = { hero: "Hero (Topo)", grade: "Grade de Cards", faixa: "Faixa Destaque", sobre: "Sobre" }[sec.tipo] || sec.tipo;
+              const usaUploadSec = sec.fonteImagem === "upload" && !!sec.foto;
+              const prevSecSvg = gerarIlustracaoPadraoSVG(sec.imagemPadraoTema || identificarTemaIlustracao(sec.titulo, sec.tipo), paleta, sec.tipo === "hero" ? "hero" : "card");
+
+              return `
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div onclick="window.toggleBloco(${sIdx})" class="px-4 sm:px-5 py-3.5 bg-slate-50/80 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2 cursor-pointer select-none">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg panel-bg-dark text-white shrink-0">${sIdx + 1}. ${tipoNome}</span>
+                      <span class="font-bold text-sm text-slate-800 truncate">${esc(sec.titulo || "Sem título")}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
+                      ${adm ? `
+                        <button type="button" onclick="window.adminMoverSubdivisao(${sIdx}, -1)" class="px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg cursor-pointer">↑</button>
+                        <button type="button" onclick="window.adminMoverSubdivisao(${sIdx}, 1)" class="px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg cursor-pointer">↓</button>
+                        <button type="button" onclick="window.adminRemoverSubdivisao(${sIdx})" class="px-2.5 py-1 text-xs bg-rose-50 text-rose-600 border border-rose-200 rounded-lg cursor-pointer">Remover</button>
+                      ` : ""}
+                      <button type="button" onclick="window.toggleBloco(${sIdx})" class="px-2.5 py-1 text-xs font-semibold text-slate-600 cursor-pointer">${aberto ? "Recolher ▲" : "Editar ▼"}</button>
+                    </div>
+                  </div>
+
+                  ${aberto ? `
+                    <div class="p-4 sm:p-5 space-y-4">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-600 mb-1">Nome no Menu (vazio = oculto)</label>
+                          <input type="text" value="${esc(sec.menuLabel || "")}"
+                            oninput="siteAtual.subdivisoes[${sIdx}].menuLabel = this.value; window.marcarPendente();"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+                        </div>
+                        <div class="md:col-span-2">
+                          <label class="block text-xs font-semibold text-slate-600 mb-1">Título Principal da Seção</label>
+                          <input type="text" value="${esc(sec.titulo || "")}"
+                            oninput="siteAtual.subdivisoes[${sIdx}].titulo = this.value; window.marcarPendente();"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Subtítulo / Texto</label>
+                        <textarea rows="3" oninput="siteAtual.subdivisoes[${sIdx}].subtitulo = this.value; window.marcarPendente();"
+                          class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">${esc(sec.subtitulo || "")}</textarea>
+                      </div>
+
+                      <!-- Controle de Imagem da Seção (Ativar/Desativar + Padrão vs Upload) -->
+                      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                          <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+                            <input type="checkbox" ${sec.usarImagem ? "checked" : ""}
+                              onchange="window.toggleUsarImagemSecao(${sIdx}, this.checked)" class="rounded" />
+                            <span>Exibir imagem nesta seção ${sec.tipo === "hero" ? "(aparece acima da frase principal)" : ""}</span>
+                          </label>
+                          ${sec.usarImagem ? `
+                            <div class="inline-flex bg-white p-0.5 rounded-lg border border-slate-200 text-[11px] font-semibold">
+                              <button type="button" onclick="window.definirFonteImagemSecao(${sIdx}, 'padrao')"
+                                class="px-2.5 py-1 rounded-md cursor-pointer ${!usaUploadSec ? "panel-bg-accent text-white" : "text-slate-600"}">✨ Imagem Padrão</button>
+                              <button type="button" onclick="window.definirFonteImagemSecao(${sIdx}, 'upload')"
+                                class="px-2.5 py-1 rounded-md cursor-pointer ${usaUploadSec ? "panel-bg-accent text-white" : "text-slate-600"}">📤 Meu Upload</button>
+                            </div>
+                          ` : ""}
+                        </div>
+                        ${sec.usarImagem ? `
+                          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <div class="w-32 h-20 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0">
+                              ${usaUploadSec ? `<img src="${esc(sec.foto)}" class="w-full h-full object-cover" />` : prevSecSvg}
+                            </div>
+                            <div class="flex-1 min-w-0 w-full space-y-1">
+                              <div class="text-[11px] font-semibold text-slate-600">Enviar nova foto (você poderá alternar entre Padrão e Upload):</div>
+                              <input type="file" accept="image/*" onchange="window.uploadFotoSecao(this, ${sIdx})" class="text-xs max-w-full" />
+                            </div>
+                          </div>
+                        ` : ""}
+                      </div>
+
+                      <!-- Itens da Grade -->
+                      ${sec.tipo === "grade" ? `
+                        <div class="pt-3 border-t border-slate-200 space-y-3">
+                          <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-3">
+                              <span class="text-xs font-bold text-slate-800">Itens desta Subdivisão (${(sec.itens || []).length})</span>
+                              ${adm ? `
+                                <select onchange="siteAtual.subdivisoes[${sIdx}].colunas = Number(this.value); window.marcarPendente();" class="text-xs border border-slate-300 rounded-lg px-2 py-1 bg-white">
+                                  <option value="2" ${sec.colunas === 2 ? "selected" : ""}>2 colunas</option>
+                                  <option value="3" ${!sec.colunas || sec.colunas === 3 ? "selected" : ""}>3 colunas</option>
+                                  <option value="4" ${sec.colunas === 4 ? "selected" : ""}>4 colunas</option>
+                                </select>
+                              ` : ""}
+                            </div>
+                            ${adm ? `<button type="button" onclick="window.adminAddItem(${sIdx})" class="text-xs font-semibold px-3 py-1.5 rounded-lg panel-bg-dark text-white cursor-pointer">+ Adicionar Item</button>` : ""}
+                          </div>
+
+                          <div class="space-y-3">
+                            ${(sec.itens || []).map((it, iIdx) => {
+                              const usaUploadIt = it.fonteImagem === "upload" && !!it.foto;
+                              const prevItSvg = gerarIlustracaoPadraoSVG(it.imagemPadraoTema || identificarTemaIlustracao(it.titulo, "item"), paleta, "card");
+                              return `
+                                <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                                  <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-600">Item #${iIdx + 1}</span>
+                                    ${adm ? `<button type="button" onclick="window.adminRemoverItem(${sIdx}, ${iIdx})" class="text-xs text-rose-600 font-semibold cursor-pointer">Excluir item</button>` : ""}
+                                  </div>
+                                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    <input type="text" value="${esc(it.titulo || "")}" placeholder="Título do item"
+                                      oninput="siteAtual.subdivisoes[${sIdx}].itens[${iIdx}].titulo = this.value; window.marcarPendente();"
+                                      class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold" />
+                                    <input type="text" value="${esc(it.descricao || "")}" placeholder="Descrição curta"
+                                      oninput="siteAtual.subdivisoes[${sIdx}].itens[${iIdx}].descricao = this.value; window.marcarPendente();"
+                                      class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" />
+                                  </div>
+
+                                  <div class="p-2.5 rounded-xl bg-white border border-slate-200 space-y-2">
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                      <label class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-700 cursor-pointer">
+                                        <input type="checkbox" ${it.usarImagem !== false ? "checked" : ""}
+                                          onchange="window.toggleUsarImagemItem(${sIdx}, ${iIdx}, this.checked)" class="rounded" />
+                                        Imagem do Card
+                                      </label>
+                                      ${it.usarImagem !== false ? `
+                                        <div class="inline-flex bg-slate-100 p-0.5 rounded-lg text-[10px] font-semibold">
+                                          <button type="button" onclick="window.definirFonteImagemItem(${sIdx}, ${iIdx}, 'padrao')"
+                                            class="px-2 py-0.5 rounded cursor-pointer ${!usaUploadIt ? "panel-bg-accent text-white" : "text-slate-600"}">✨ Padrão</button>
+                                          <button type="button" onclick="window.definirFonteImagemItem(${sIdx}, ${iIdx}, 'upload')"
+                                            class="px-2 py-0.5 rounded cursor-pointer ${usaUploadIt ? "panel-bg-accent text-white" : "text-slate-600"}">📤 Meu Upload</button>
+                                        </div>
+                                      ` : ""}
+                                    </div>
+                                    ${it.usarImagem !== false ? `
+                                      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                        <div class="w-24 h-16 rounded-lg overflow-hidden border border-slate-200 shrink-0">
+                                          ${usaUploadIt ? `<img src="${esc(it.foto)}" class="w-full h-full object-cover" />` : prevItSvg}
+                                        </div>
+                                        <input type="file" accept="image/*" onchange="window.uploadFotoItem(this, ${sIdx}, ${iIdx})" class="text-xs max-w-full" />
+                                      </div>
+                                    ` : ""}
+                                  </div>
+
+                                  ${blocoWhatsAppEditorHTML(it.whatsapp, `siteAtual.subdivisoes[${sIdx}].itens[${iIdx}].whatsapp`)}
+                                </div>
+                              `;
+                            }).join("")}
+                          </div>
+                        </div>
+                      ` : ""}
+
+                      ${blocoWhatsAppEditorHTML(sec.whatsapp, `siteAtual.subdivisoes[${sIdx}].whatsapp`)}
+                    </div>
+                  ` : ""}
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function viewRodape() {
+      const r = siteAtual.rodape || {};
+      return `
+        <div class="space-y-5">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Rodapé do Site</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Informações exibidas na faixa final do seu site público.</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Frase Institucional</label>
+              <input type="text" value="${esc(r.texto || "")}"
+                oninput="siteAtual.rodape.texto = this.value; window.marcarPendente();"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Endereço / Região de Atendimento</label>
+                <input type="text" value="${esc(r.endereco || "")}"
+                  oninput="siteAtual.rodape.endereco = this.value; window.marcarPendente();"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Copyright</label>
+                <input type="text" value="${esc(r.copyright || "")}"
+                  oninput="siteAtual.rodape.copyright = this.value; window.marcarPendente();"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 10. PRÉVIA FIEL DO SITE PUBLICADO (PC/TABLET HORIZONTAL + CELULAR VERTICAL)
+    // =========================================================================
+    function gerarHtmlSitePublico(cfgRaw) {
+      const cfg = normalizarEstruturaSite(JSON.parse(JSON.stringify(cfgRaw || {})));
+      const p = cfg.paleta || {};
+      const id = cfg.identidade || {};
+      const c = cfg.contatoPadrao || {};
+      const r = cfg.rodape || {};
+      const pulsante = id.botoesPulsantes !== false;
+
+      const montarWhats = (w) => {
+        if (!w || !w.ativo) return null;
+        const num = (w.usarPadrao === false && w.numeroCustom)
+          ? String(w.numeroCustom).replace(/\D/g, "")
+          : String(c.whatsapp || "").replace(/\D/g, "");
+        if (!num) return null;
+        const msg = w.mensagem || c.mensagemPadrao || "Olá! Vim pelo site.";
+        return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+      };
+
+      const linksMenu = (cfg.subdivisoes || []).filter(s => s.menuLabel);
+      const secoesHtml = (cfg.subdivisoes || []).map(sec => {
+        const ctaUrl = montarWhats(sec.whatsapp);
+        const btnCta = ctaUrl ? `<a href="${ctaUrl}" target="_blank" rel="noopener noreferrer" class="inline-block px-7 py-3.5 rounded-full text-white font-semibold text-sm shadow-md ${pulsante ? "btn-pulsante" : ""}" style="background:var(--cta);">${esc(sec.whatsapp.textoBotao || "Falar no WhatsApp")}</a>` : "";
+
+        const midiaSecao = sec.usarImagem
+          ? ((sec.fonteImagem === "upload" && sec.foto)
+              ? `<img src="${esc(sec.foto)}" alt="${esc(sec.titulo)}" class="w-full h-full object-cover block" />`
+              : gerarIlustracaoPadraoSVG(sec.imagemPadraoTema || identificarTemaIlustracao(sec.titulo, sec.tipo), p, sec.tipo === "hero" ? "hero" : "card"))
+          : "";
+
+        if (sec.tipo === "hero") {
+          return `
+            <section id="${esc(sec.id)}" class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
+              <div class="rounded-3xl overflow-hidden shadow-sm border border-black/5" style="background:var(--secundaria);">
+                ${midiaSecao ? `<div class="w-full h-52 sm:h-72 md:h-80 overflow-hidden bg-white/40">${midiaSecao}</div>` : ""}
+                <div class="p-6 sm:p-10 md:p-12 text-center max-w-3xl mx-auto">
+                  <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold leading-tight break-words" style="color:var(--primaria);">${esc(sec.titulo || "")}</h1>
+                  <p class="mt-4 text-sm sm:text-base md:text-lg opacity-90 leading-relaxed whitespace-pre-line">${esc(sec.subtitulo || "")}</p>
+                  ${btnCta ? `<div class="mt-7">${btnCta}</div>` : ""}
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        if (sec.tipo === "faixa") {
+          return `
+            <section id="${esc(sec.id)}" class="py-14 sm:py-16 my-6 text-white relative overflow-hidden" style="background:var(--primaria);">
+              <div class="max-w-4xl mx-auto px-5 text-center relative z-10">
+                ${midiaSecao ? `<div class="w-24 h-24 mx-auto mb-5 rounded-2xl overflow-hidden border-2 border-white/20 shadow-lg">${midiaSecao}</div>` : ""}
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold leading-snug">${esc(sec.titulo || "")}</h2>
+                <p class="mt-3 text-sm sm:text-base md:text-lg text-white/90 whitespace-pre-line">${esc(sec.subtitulo || "")}</p>
+                ${btnCta ? `<div class="mt-7">${btnCta}</div>` : ""}
+              </div>
+            </section>
+          `;
+        }
+
+        if (sec.tipo === "sobre") {
+          return `
+            <section id="${esc(sec.id)}" class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+              <div class="grid grid-cols-1 ${midiaSecao ? "md:grid-cols-2" : ""} gap-8 items-center">
+                ${midiaSecao ? `<div class="w-full h-64 sm:h-80 rounded-3xl overflow-hidden shadow-md border border-black/5">${midiaSecao}</div>` : ""}
+                <div>
+                  <h2 class="text-2xl sm:text-3xl font-bold mb-4" style="color:var(--primaria);">${esc(sec.titulo || "")}</h2>
+                  <p class="text-sm sm:text-base md:text-lg leading-relaxed opacity-90 whitespace-pre-line">${esc(sec.subtitulo || "")}</p>
+                  ${btnCta ? `<div class="mt-7">${btnCta}</div>` : ""}
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        const qtd = (sec.itens || []).length;
+        const gridCols = qtd === 1
+          ? "grid-cols-1 max-w-md mx-auto"
+          : (qtd === 2 || qtd === 4 || sec.colunas === 2)
+            ? "grid-cols-1 sm:grid-cols-2"
+            : sec.colunas === 4
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
+
+        return `
+          <section id="${esc(sec.id)}" class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+            <div class="text-center max-w-2xl mx-auto mb-10">
+              <h2 class="text-2xl sm:text-3xl font-bold" style="color:var(--primaria);">${esc(sec.titulo || "")}</h2>
+              ${sec.subtitulo ? `<p class="mt-2 text-sm sm:text-base opacity-80">${esc(sec.subtitulo)}</p>` : ""}
+            </div>
+            <div class="grid ${gridCols} gap-6">
+              ${(sec.itens || []).map(it => {
+                const itWhats = montarWhats(it.whatsapp);
+                const itMidia = it.usarImagem !== false
+                  ? ((it.fonteImagem === "upload" && it.foto)
+                      ? `<img src="${esc(it.foto)}" alt="${esc(it.titulo)}" class="w-full h-full object-cover block" />`
+                      : gerarIlustracaoPadraoSVG(it.imagemPadraoTema || identificarTemaIlustracao(it.titulo, "item"), p, "card"))
+                  : "";
+                return `
+                  <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-black/5 flex flex-col justify-between">
+                    <div>
+                      ${itMidia ? `<div class="w-full h-44 overflow-hidden">${itMidia}</div>` : ""}
+                      <div class="p-5">
+                        <h3 class="font-bold text-base sm:text-lg" style="color:var(--primaria);">${esc(it.titulo || "")}</h3>
+                        <p class="mt-2 text-xs sm:text-sm opacity-85 leading-relaxed">${esc(it.descricao || "")}</p>
+                      </div>
+                    </div>
+                    ${itWhats ? `<div class="px-5 pb-5"><a href="${itWhats}" target="_blank" rel="noopener noreferrer" class="block text-center py-2.5 px-4 rounded-full text-xs font-semibold text-white" style="background:var(--cta);">${esc(it.whatsapp.textoBotao || "Solicitar no WhatsApp")}</a></div>` : ""}
+                  </div>
+                `;
+              }).join("")}
+            </div>
+            ${btnCta ? `<div class="mt-10 text-center">${btnCta}</div>` : ""}
+          </section>
+        `;
+      }).join("");
+
+      const urlWhatsFlut = c.whatsapp ? `https://wa.me/${String(c.whatsapp).replace(/\D/g, "")}?text=${encodeURIComponent(c.mensagemPadrao || "Olá!")}` : "";
+
+      return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <style>
+          :root{--primaria:${esc(p.primaria || "#76513F")};--secundaria:${esc(p.secundaria || "#E8D9C7")};--fundo:${esc(p.fundo || "#F8F5EF")};--cta:${esc(p.destaqueCta || "#C5A46D")};--texto:${esc(p.texto || "#3B2B23")};}
+          html,body{margin:0;padding:0;background:var(--fundo);color:var(--texto);font-family:Inter,system-ui,sans-serif;overflow-x:hidden;overflow-wrap:anywhere;}
+          @keyframes pulsar{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(197,164,109,.5);}50%{transform:scale(1.02);box-shadow:0 0 0 10px rgba(197,164,109,0);}}
+          .btn-pulsante{animation:pulsar 2.4s infinite;}
+        </style></head><body class="min-h-screen flex flex-col">
+        <header class="bg-white/95 backdrop-blur border-b border-black/5 py-3.5 sticky top-0 z-40">
+          <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              ${id.logoClara ? `<img src="${esc(id.logoClara)}" class="h-10 w-auto object-contain shrink-0" />` : ""}
+              <span class="font-bold text-sm sm:text-base truncate" style="color:var(--primaria);">${esc(id.titulo || "Meu Site")}</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-5 text-xs font-semibold">
+              ${linksMenu.map(s => `<a href="#${esc(s.id)}" class="hover:opacity-75">${esc(s.menuLabel)}</a>`).join("")}
+            </nav>
+            <span class="md:hidden text-xl font-bold" style="color:var(--primaria);">☰</span>
+          </div>
+        </header>
+        <main class="flex-1">${secoesHtml}</main>
+        <footer class="py-10 text-white text-center px-5 mt-10" style="background:var(--primaria);">
+          ${id.logoEscura ? `<img src="${esc(id.logoEscura)}" class="h-12 mx-auto mb-4 object-contain" />` : ""}
+          <p class="text-sm text-white/90">${esc(r.texto || "")}</p>
+          <p class="text-xs text-white/75 mt-1">${esc(r.endereco || "")}</p>
+          <p class="text-xs text-white/60 mt-4 pt-4 border-t border-white/15">${esc(r.copyright || "")}</p>
+        </footer>
+        ${urlWhatsFlut && c.botaoFlutuante !== false ? `<a href="${urlWhatsFlut}" target="_blank" class="fixed bottom-4 right-4 bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg">WhatsApp</a>` : ""}
+      </body></html>`;
+    }
+
+    function viewPreviaSite() {
+      const db = getSitesDB();
+      const salvo = db[siteAtual.siteId] || siteAtual;
+      const urlExibida = obterUrlDoSiteAtual() || "https://seu-site-publico.pages.dev";
+      const specs = {
+        desktop: { label: "1280×760 • PC (Horizontal)" },
+        tablet: { label: "1024×720 • Tablet (Horizontal)" },
+        mobile: { label: "390×760 • Celular (Vertical)" }
+      };
+
+      return `
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Prévia Exata do Site Publicado</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Última versão salva no banco • ${esc(salvo.atualizadoEm || "Agora")}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="window.recarregarPreviaSite()" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">↻ Recarregar</button>
+              <button type="button" onclick="window.abrirPreviaNovaAba()" class="px-3.5 py-2 rounded-xl panel-bg-dark text-white text-xs font-semibold hover:opacity-90 cursor-pointer">Abrir em Nova Aba ↗</button>
+            </div>
+          </div>
+
+          ${temAlteracoesPendentes ? `
+            <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-wrap items-center justify-between gap-3">
+              <span class="text-xs font-semibold text-amber-900">⚠️ Você possui edições ainda não salvas. Salve para vê-las nesta prévia oficial.</span>
+              <button type="button" onclick="window.salvarEAtualizarPrevia()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold cursor-pointer">Salvar e Atualizar Prévia</button>
+            </div>
+          ` : ""}
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="inline-flex bg-slate-100 p-1 rounded-xl gap-1">
+                <button type="button" onclick="window.alterarDispositivoPrevia('desktop')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${previaDispositivo === "desktop" ? "panel-bg-dark text-white" : "text-slate-600"}">🖥️ PC</button>
+                <button type="button" onclick="window.alterarDispositivoPrevia('tablet')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${previaDispositivo === "tablet" ? "panel-bg-dark text-white" : "text-slate-600"}">📱 Tablet</button>
+                <button type="button" onclick="window.alterarDispositivoPrevia('mobile')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${previaDispositivo === "mobile" ? "panel-bg-dark text-white" : "text-slate-600"}">📲 Celular</button>
+              </div>
+              <div class="flex items-center gap-2 text-xs font-mono text-slate-500">
+                <span>${specs[previaDispositivo].label}</span>
+                <span id="previa-scale-badge" class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold">100%</span>
+              </div>
+            </div>
+
+            <div id="previa-stage-outer" class="w-full flex justify-center overflow-hidden rounded-2xl bg-slate-100/80 p-2 sm:p-4 border border-slate-200/80">
+              <div id="previa-browser-shell" class="rounded-2xl overflow-hidden shadow-xl border border-slate-300 bg-white">
+                <div class="bg-slate-900 px-3 py-2 flex items-center justify-between gap-2 text-[11px] text-slate-300">
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  </div>
+                  <div class="bg-slate-800 px-3 py-0.5 rounded-md font-mono text-[10px] truncate flex-1 text-center">${esc(urlExibida)}</div>
+                  <span class="text-emerald-400 font-semibold shrink-0">Salvo</span>
+                </div>
+                <div id="previa-viewport-frame">
+                  <iframe id="iframe-previa-site" title="Prévia do Site"></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function ajustarEscalaPrevia() {
+      const outer = document.getElementById("previa-stage-outer");
+      const frame = document.getElementById("previa-viewport-frame");
+      const iframe = document.getElementById("iframe-previa-site");
+      const badge = document.getElementById("previa-scale-badge");
+      if (!outer || !frame || !iframe) return;
+
+      const dims = {
+        desktop: { w: 1280, h: 760 },
+        tablet: { w: 1024, h: 720 },
+        mobile: { w: 390, h: 760 }
+      }[previaDispositivo] || { w: 1280, h: 760 };
+
+      const dispW = Math.max(240, outer.clientWidth - 20);
+      const scale = Math.min(1, dispW / dims.w);
+
+      frame.style.width = Math.round(dims.w * scale) + "px";
+      frame.style.height = Math.round(dims.h * scale) + "px";
+      iframe.style.width = dims.w + "px";
+      iframe.style.height = dims.h + "px";
+      iframe.style.transform = `scale(${scale})`;
+
+      if (badge) badge.textContent = Math.round(scale * 100) + "%";
+    }
+
+    function montarIframePreviaSite() {
+      const iframe = document.getElementById("iframe-previa-site");
+      if (!iframe) return;
+      const db = getSitesDB();
+      const salvo = db[siteAtual.siteId] || siteAtual;
+      iframe.srcdoc = gerarHtmlSitePublico(salvo);
+      ajustarEscalaPrevia();
+
+      if (previaResizeObserver) previaResizeObserver.disconnect();
+      const outer = document.getElementById("previa-stage-outer");
+      if (outer && typeof ResizeObserver !== "undefined") {
+        previaResizeObserver = new ResizeObserver(() => ajustarEscalaPrevia());
+        previaResizeObserver.observe(outer);
+      }
+    }
+
+    function alterarDispositivoPrevia(disp) {
+      previaDispositivo = disp;
+      trocarAba("previa", true);
+    }
+
+    function recarregarPreviaSite() {
+      montarIframePreviaSite();
+      mostrarToast("Prévia recarregada com a última versão salva.", "info");
+    }
+
+    async function salvarEAtualizarPrevia() {
+      await salvarAlteracoesSite();
+      trocarAba("previa", true);
+    }
+
+    function abrirPreviaNovaAba() {
+      const db = getSitesDB();
+      const salvo = db[siteAtual.siteId] || siteAtual;
+      const blob = new Blob([gerarHtmlSitePublico(salvo)], { type: "text/html;charset=utf-8" });
+      window.open(URL.createObjectURL(blob), "_blank", "noopener");
+    }
+
+    // =========================================================================
+    // 11. ABAS EXCLUSIVAS ADMIN: CONFIGURAÇÕES (PERSONALIZAÇÃO + API) E LOGS
+    // =========================================================================
+    function trocarSubAbaConfig(sub) {
+      subAbaConfig = sub;
+      trocarAba("configuracoes", true);
+    }
+
+    function viewConfiguracoes() {
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Configurações do Sistema</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Personalize a marca, cores e categorias da página inicial do painel ou gerencie suas chaves de API.</p>
+            </div>
+            <div class="inline-flex flex-wrap bg-white p-1 rounded-xl border border-slate-200 shadow-xs gap-1">
+              <button type="button" onclick="window.trocarSubAbaConfig('personalizacao')"
+                class="px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${subAbaConfig === "personalizacao" ? "panel-bg-dark text-white shadow-xs" : "text-slate-600 hover:bg-slate-100"}">
+                🎨 Personalizar Painel & Home
+              </button>
+              <button type="button" onclick="window.trocarSubAbaConfig('api')"
+                class="px-3.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${subAbaConfig === "api" ? "panel-bg-dark text-white shadow-xs" : "text-slate-600 hover:bg-slate-100"}">
+                ⚙️ API & Integrações
+              </button>
+            </div>
+          </div>
+
+          ${subAbaConfig === "api" ? viewSubAbaApi() : viewSubAbaPersonalizacao()}
+        </div>
+      `;
+    }
+
+    function viewSubAbaPersonalizacao() {
+      const cfg = portalConfigDraft || getPortalConfigDB();
+      const cats = cfg.categorias || [];
+
+      return `
+        <div class="space-y-5">
+          <!-- 1. Logo, Marca e Cores do Painel -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Logo, Marca e Cores do Painel</h3>
+                <p class="text-xs text-slate-500">Aplicado automaticamente na página inicial, barra lateral e cabeçalho.</p>
+              </div>
+              <button type="button" onclick="window.restaurarPadraoPainel()"
+                class="text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer">
+                Restaurar Padrão
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Nome Principal da Marca</label>
+                <input type="text" value="${esc(cfg.marcaNome || "")}"
+                  oninput="portalConfigDraft.marcaNome = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Palavra em Destaque (Opcional)</label>
+                <input type="text" value="${esc(cfg.marcaDestaque || "")}"
+                  oninput="portalConfigDraft.marcaDestaque = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Subtítulo do Cabeçalho</label>
+                <input type="text" value="${esc(cfg.subtituloHeader || "")}"
+                  oninput="portalConfigDraft.subtituloHeader = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+            </div>
+
+            <!-- Upload da Logo do Painel -->
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                ${cfg.logoUrl
+                  ? `<img src="${esc(cfg.logoUrl)}" class="w-full h-full object-contain p-1" />`
+                  : `<span class="text-[10px] font-semibold text-slate-400 text-center px-1">Ícone Padrão</span>`}
+              </div>
+              <div class="flex-1 min-w-0 w-full">
+                <div class="text-xs font-bold text-slate-800 mb-1">Logo do Seu Painel (Cabeçalho, Sidebar e Rodapé)</div>
+                <input type="file" accept="image/*" onchange="window.uploadLogoPainel(this)" class="text-xs max-w-full" />
+                ${cfg.logoUrl ? `<button type="button" onclick="portalConfigDraft.logoUrl=''; window.aplicarPersonalizacaoPainel(portalConfigDraft); window.trocarAba('configuracoes', true);" class="block mt-1.5 text-[11px] font-semibold text-rose-600 cursor-pointer">Remover logo e usar ícone padrão</button>` : ""}
+              </div>
+            </div>
+
+            <!-- Paleta de Cores do Painel -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+              <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <input type="color" value="${esc(cfg.corEscura || "#0B0F19")}"
+                    oninput="portalConfigDraft.corEscura = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                    onchange="portalConfigDraft.corEscura = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                    class="w-10 h-10 rounded-lg border border-slate-300 cursor-pointer bg-white p-0.5 shrink-0" />
+                  <div class="min-w-0">
+                    <div class="text-xs font-bold text-slate-800 truncate">Cor Principal</div>
+                    <div class="text-[10px] text-slate-500">Sidebar e Botões</div>
+                  </div>
+                </div>
+                <span class="text-[11px] font-mono text-slate-500 uppercase">${esc(cfg.corEscura || "#0B0F19")}</span>
+              </div>
+
+              <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <input type="color" value="${esc(cfg.corAcento || "#4F46E5")}"
+                    oninput="portalConfigDraft.corAcento = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                    onchange="portalConfigDraft.corAcento = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                    class="w-10 h-10 rounded-lg border border-slate-300 cursor-pointer bg-white p-0.5 shrink-0" />
+                  <div class="min-w-0">
+                    <div class="text-xs font-bold text-slate-800 truncate">Cor de Destaque</div>
+                    <div class="text-[10px] text-slate-500">Ícones e Abas Ativas</div>
+                  </div>
+                </div>
+                <span class="text-[11px] font-mono text-slate-500 uppercase">${esc(cfg.corAcento || "#4F46E5")}</span>
+              </div>
+
+              <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <input type="color" value="${esc(cfg.corFundo || "#F8FAFC")}"
+                    oninput="portalConfigDraft.corFundo = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                    onchange="portalConfigDraft.corFundo = this.value; window.aplicarPersonalizacaoPainel(portalConfigDraft);"
+                    class="w-10 h-10 rounded-lg border border-slate-300 cursor-pointer bg-white p-0.5 shrink-0" />
+                  <div class="min-w-0">
+                    <div class="text-xs font-bold text-slate-800 truncate">Fundo da Home</div>
+                    <div class="text-[10px] text-slate-500">Cor base da página</div>
+                  </div>
+                </div>
+                <span class="text-[11px] font-mono text-slate-500 uppercase">${esc(cfg.corFundo || "#F8FAFC")}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Textos da Página Inicial e Categorias -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-5">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="font-bold text-slate-900 text-base">Página Inicial & Categorias de Recursos</h3>
+              <p class="text-xs text-slate-500">Edite a apresentação inicial e os cards de categorias exibidos antes do login.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Selo Superior (Badge)</label>
+                <input type="text" value="${esc(cfg.heroBadge || "")}"
+                  oninput="portalConfigDraft.heroBadge = this.value;"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Copyright do Rodapé</label>
+                <input type="text" value="${esc(cfg.rodapeCopyright || "")}"
+                  oninput="portalConfigDraft.rodapeCopyright = this.value;"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Título Principal da Página Inicial</label>
+                <input type="text" value="${esc(cfg.heroTitulo || "")}"
+                  oninput="portalConfigDraft.heroTitulo = this.value;"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Descrição Principal</label>
+                <textarea rows="2" oninput="portalConfigDraft.heroDescricao = this.value;"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm">${esc(cfg.heroDescricao || "")}</textarea>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-900">Categorias da Página Inicial (${cats.length})</h4>
+                  <p class="text-[11px] text-slate-500">Ative, desative, reordene ou crie novos cards de apresentação.</p>
+                </div>
+                <button type="button" onclick="window.adicionarCategoriaPortal()"
+                  class="px-3.5 py-2 rounded-xl panel-bg-accent text-white text-xs font-semibold hover:opacity-95 cursor-pointer">
+                  + Nova Categoria
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Título da Seção de Categorias</label>
+                  <input type="text" value="${esc(cfg.categoriasTitulo || "")}"
+                    oninput="portalConfigDraft.categoriasTitulo = this.value;"
+                    class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Subtítulo da Seção de Categorias</label>
+                  <input type="text" value="${esc(cfg.categoriasSubtitulo || "")}"
+                    oninput="portalConfigDraft.categoriasSubtitulo = this.value;"
+                    class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs" />
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                ${cats.map((c, idx) => `
+                  <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        <input type="checkbox" ${c.ativa !== false ? "checked" : ""}
+                          onchange="portalConfigDraft.categorias[${idx}].ativa = this.checked; window.trocarAba('configuracoes', true);" class="rounded" />
+                        <span>Categoria #${idx + 1} ${c.ativa !== false ? "(Visível)" : "(Oculta)"}</span>
+                      </label>
+                      <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="window.moverCategoriaPortal(${idx}, -1)" class="px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg cursor-pointer">↑</button>
+                        <button type="button" onclick="window.moverCategoriaPortal(${idx}, 1)" class="px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg cursor-pointer">↓</button>
+                        <button type="button" onclick="window.removerCategoriaPortal(${idx})" class="px-2.5 py-1 text-xs bg-rose-50 text-rose-600 border border-rose-200 rounded-lg cursor-pointer">Excluir</button>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                      <input type="text" value="${esc(c.icone || "✨")}" placeholder="Ícone"
+                        oninput="portalConfigDraft.categorias[${idx}].icone = this.value;"
+                        class="sm:col-span-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-center" />
+                      <input type="text" value="${esc(c.titulo || "")}" placeholder="Título da categoria"
+                        oninput="portalConfigDraft.categorias[${idx}].titulo = this.value;"
+                        class="sm:col-span-4 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold" />
+                      <input type="text" value="${esc(c.descricao || "")}" placeholder="Descrição exibida no card"
+                        oninput="portalConfigDraft.categorias[${idx}].descricao = this.value;"
+                        class="sm:col-span-6 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" />
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex justify-end">
+              <button type="button" onclick="window.salvarPersonalizacaoPainel()"
+                class="panel-bg-dark hover:opacity-90 text-white text-xs sm:text-sm font-semibold px-6 py-3 rounded-xl shadow-sm transition cursor-pointer">
+                Salvar Personalização do Painel
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewSubAbaApi() {
+      const cfg = getIntegracoesDB();
+      return `
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-slate-900 text-base">API Gemini & Integração Cloudflare</h3>
+            <p class="text-xs text-slate-500">Configure sua chave Gemini API, modelo e endereço público na Cloudflare.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Gemini API Key (Opcional para uso direto)</label>
+              <input id="int-gemini-key" type="password" value="${esc(cfg.geminiApiKey || "")}" placeholder="AIzaSy..."
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Modelo Gemini</label>
+              <select id="int-gemini-modelo" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white">
+                <option value="gemini-2.5-flash" ${cfg.geminiModelo === "gemini-2.5-flash" ? "selected" : ""}>gemini-2.5-flash (Rápido e gratuito)</option>
+                <option value="gemini-2.5-pro" ${cfg.geminiModelo === "gemini-2.5-pro" ? "selected" : ""}>gemini-2.5-pro (Avançado)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">URL Base do Projeto Público na Cloudflare</label>
+            <input id="int-url-publica" type="text" value="${esc(cfg.urlSitePublico || "")}" placeholder="https://seu-site-publico.pages.dev"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Instruções Globais para a IA</label>
+            <textarea id="int-instrucoes" rows="3" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm">${esc(cfg.instrucoesGlobais || "")}</textarea>
+          </div>
+          <div class="pt-2 flex justify-end">
+            <button type="button" onclick="window.salvarIntegracoesAdmin()"
+              class="panel-bg-dark hover:opacity-90 text-white text-xs sm:text-sm font-semibold px-6 py-3 rounded-xl transition cursor-pointer">
+              Salvar Configurações de API
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewLogs() {
+      const logs = getLogsDB();
+      const renderValorLog = (v) => {
+        const s = String(v ?? "");
+        if (/^#[0-9A-Fa-f]{6}$/.test(s)) {
+          return `<span class="inline-flex items-center gap-1.5 font-mono"><span class="w-3 h-3 rounded-full border border-black/20 inline-block" style="background:${s}"></span>${esc(s)}</span>`;
+        }
+        return `<span class="break-words">${esc(s)}</span>`;
+      };
+
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Logs de Auditoria (Antes vs Depois)</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Registro completo de modificações de clientes e administradores. Senhas são protegidas por privacidade.</p>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" onclick="window.exportarLogs('json')" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">Exportar JSON</button>
+              <button type="button" onclick="window.exportarLogs('csv')" class="px-3.5 py-2 rounded-xl bg-enterprise text-white text-xs font-semibold hover:bg-slate-800 cursor-pointer">Exportar CSV</button>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            ${logs.length === 0 ? `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-400">Nenhuma atividade registrada ainda.</div>` : logs.map(l => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${l.privacidadeSenha ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-indigo-50 text-indigo-700 border border-indigo-200"}">${esc(l.tipo)}</span>
+                    <span class="font-bold text-sm text-slate-900">${esc(l.ator)}</span>
+                    <span class="text-xs text-slate-500">(${esc(l.role)}) • Site: <code class="font-mono text-slate-700">${esc(l.siteId)}</code></span>
+                  </div>
+                  <span class="text-xs font-mono text-slate-400">${esc(l.dataHora)}</span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-700">${esc(l.resumo)}</p>
+                ${l.privacidadeSenha ? `
+                  <div class="text-xs bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600">
+                    🔒 Privacidade preservada: a nova senha foi criptografada em SHA-256 e nunca é exibida nos logs.
+                  </div>
+                ` : (l.mudancas || []).length > 0 ? `
+                  <div class="space-y-2">
+                    ${l.mudancas.map(m => `
+                      <div class="rounded-xl border border-slate-200 overflow-hidden text-xs">
+                        <div class="bg-slate-50 px-3 py-1.5 font-bold text-slate-700 border-b border-slate-200">${esc(m.campo)}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2">
+                          <div class="bg-rose-50/70 px-3 py-2 text-rose-900 border-b sm:border-b-0 sm:border-r border-slate-200 min-w-0">
+                            <div class="text-[10px] font-bold uppercase text-rose-600 mb-0.5">Antes</div>
+                            ${renderValorLog(m.antes)}
+                          </div>
+                          <div class="bg-emerald-50/70 px-3 py-2 text-emerald-900 min-w-0">
+                            <div class="text-[10px] font-bold uppercase text-emerald-600 mb-0.5">Depois</div>
+                            ${renderValorLog(m.depois)}
+                          </div>
+                        </div>
+                      </div>
+                    `).join("")}
+                  </div>
+                ` : ""}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 12. AÇÕES DE EDIÇÃO, UPLOAD, SALVAMENTO, PALETA, GEMINI E PWA
+    // =========================================================================
+    function atualizarSlugSite(val) {
+      siteAtual.siteId = String(val || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+      marcarPendente();
+      atualizarCabecalhoWorkspace();
+    }
+
+    function atualizarWhatsappPadrao(val) {
+      siteAtual.contatoPadrao.whatsapp = String(val || "").replace(/\D/g, "");
+      marcarPendente();
+    }
+
+    function atualizarCor(campo, hex) {
+      siteAtual.paleta[campo] = hex.toUpperCase();
+      siteAtual.paletaTemplateId = "avulsa";
+      siteAtual.paletaTemplateNome = "Cor Avulsa";
+      marcarPendente();
+      const inputHex = document.getElementById("hex-" + campo);
+      if (inputHex) inputHex.value = hex.toUpperCase();
+      trocarAba("paleta", true);
+    }
+
+    function atualizarCorHex(campo, val) {
+      const limpo = val.trim().toUpperCase();
+      if (/^#[0-9A-F]{6}$/.test(limpo)) {
+        atualizarCor(campo, limpo);
+      }
+    }
+
+    function aplicarTemplateCor(tplId) {
+      const tpl = getTemplatesCorDB().find(t => t.id === tplId);
+      if (!tpl) return;
+      siteAtual.paleta = { ...tpl.cores };
+      siteAtual.paletaTemplateId = tpl.id;
+      siteAtual.paletaTemplateNome = tpl.nome;
+      marcarPendente();
+      trocarAba("paleta", true);
+      mostrarToast(`Template "${tpl.nome}" aplicado!`, "ok");
+    }
+
+    function ativarCorAvulsa() {
+      siteAtual.paletaTemplateId = "avulsa";
+      siteAtual.paletaTemplateNome = "Cor Avulsa";
+      marcarPendente();
+      trocarAba("paleta", true);
+      mostrarToast("Modo Cor Avulsa ativado para este site.", "info");
+    }
+
+    function confirmarNovoTemplateCor() {
+      const nome = document.getElementById("input-nome-template-cor").value.trim();
+      if (!nome) return mostrarToast("Digite um nome para o template.", "erro");
+      const list = getTemplatesCorDB();
+      const novo = { id: "tpl-" + Date.now(), nome, padrao: false, cores: { ...siteAtual.paleta } };
+      list.push(novo);
+      setTemplatesCorDB(list);
+      siteAtual.paletaTemplateId = novo.id;
+      siteAtual.paletaTemplateNome = novo.nome;
+      document.getElementById("input-nome-template-cor").value = "";
+      fecharModal("modal-novo-template-cor");
+      marcarPendente();
+      trocarAba("paleta", true);
+      mostrarToast(`Template "${nome}" salvo na biblioteca!`, "ok");
+    }
+
+    function excluirTemplateCor(tplId) {
+      const list = getTemplatesCorDB().filter(t => t.padrao || t.id !== tplId);
+      setTemplatesCorDB(list);
+      if (siteAtual.paletaTemplateId === tplId) {
+        siteAtual.paletaTemplateId = "avulsa";
+        siteAtual.paletaTemplateNome = "Cor Avulsa";
+      }
+      trocarAba("paleta", true);
+      mostrarToast("Template personalizado removido.", "info");
+    }
+
+    function toggleBloco(idx) {
+      if (blocosAbertos.has(idx)) blocosAbertos.delete(idx);
+      else blocosAbertos.add(idx);
+      trocarAba("conteudo", true);
+    }
+
+    function toggleUsarImagemSecao(sIdx, ativo) {
+      siteAtual.subdivisoes[sIdx].usarImagem = !!ativo;
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    function definirFonteImagemSecao(sIdx, fonte) {
+      const sec = siteAtual.subdivisoes[sIdx];
+      if (fonte === "upload" && !sec.foto) {
+        mostrarToast("Envie uma foto abaixo para ativar 'Meu Upload'.", "info");
+        return;
+      }
+      sec.fonteImagem = fonte;
+      sec.usarImagem = true;
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    function toggleUsarImagemItem(sIdx, iIdx, ativo) {
+      siteAtual.subdivisoes[sIdx].itens[iIdx].usarImagem = !!ativo;
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    function definirFonteImagemItem(sIdx, iIdx, fonte) {
+      const it = siteAtual.subdivisoes[sIdx].itens[iIdx];
+      if (fonte === "upload" && !it.foto) {
+        mostrarToast("Envie uma foto abaixo para ativar 'Meu Upload'.", "info");
+        return;
+      }
+      it.fonteImagem = fonte;
+      it.usarImagem = true;
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    async function enviarImagemSegura(file) {
+      try {
+        const fd = new FormData();
+        fd.append("siteId", siteAtual.siteId || "padrao");
+        fd.append("arquivo", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.url) return data.url;
+        }
+      } catch (e) {}
+      return await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function uploadLogoSite(input, campo) {
+      if (!input.files[0]) return;
+      siteAtual.identidade[campo] = await enviarImagemSegura(input.files[0]);
+      marcarPendente();
+      trocarAba("identidade", true);
+      mostrarToast("Logo carregada! Clique em Salvar para publicar.", "info");
+    }
+
+    async function uploadFotoSecao(input, sIdx) {
+      if (!input.files[0]) return;
+      siteAtual.subdivisoes[sIdx].foto = await enviarImagemSegura(input.files[0]);
+      siteAtual.subdivisoes[sIdx].usarImagem = true;
+      siteAtual.subdivisoes[sIdx].fonteImagem = "upload";
+      marcarPendente();
+      trocarAba("conteudo", true);
+      mostrarToast("Foto da seção carregada! Alterne entre Padrão e Meu Upload quando quiser.", "info");
+    }
+
+    async function uploadFotoItem(input, sIdx, iIdx) {
+      if (!input.files[0]) return;
+      siteAtual.subdivisoes[sIdx].itens[iIdx].foto = await enviarImagemSegura(input.files[0]);
+      siteAtual.subdivisoes[sIdx].itens[iIdx].usarImagem = true;
+      siteAtual.subdivisoes[sIdx].itens[iIdx].fonteImagem = "upload";
+      marcarPendente();
+      trocarAba("conteudo", true);
+      mostrarToast("Foto do item carregada! Alterne entre Padrão e Meu Upload quando quiser.", "info");
+    }
+
+    function adminTrocarSite(siteId) {
+      if (!isAdmin()) return;
+      const db = getSitesDB();
+      if (db[siteId]) {
+        carregarSiteNaMemoria(db[siteId], false);
+        popularSeletorSitesAdmin();
+        trocarAba(abaAtual);
+      }
+    }
+
+    function adminCriarNovoSite() {
+      if (!isAdmin()) return;
+      const slug = "novo-site-" + String(Date.now()).slice(-4);
+      const novo = normalizarEstruturaSite({
+        siteId: slug,
+        dominio: "",
+        paletaTemplateId: "tpl-executivo-marinho",
+        paletaTemplateNome: "Executivo Marinho",
+        identidade: { titulo: "Novo Projeto", logoClara: "", logoEscura: "", cabecalhoFixoCompacto: true, botoesPulsantes: true },
+        paleta: { ...TEMPLATES_COR_PADRAO[1].cores },
+        contatoPadrao: { whatsapp: "", mensagemPadrao: "Olá! Vim pelo site.", instagram: "", botaoFlutuante: true },
+        subdivisoes: [
+          { id: "hero-" + Date.now(), tipo: "hero", menuLabel: "Início", titulo: "Bem-vindo ao Novo Site", subtitulo: "Descreva aqui a proposta principal do negócio.", colunas: 2, foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "padrao_generico", itens: [], whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Falar no WhatsApp", mensagem: "" } }
+        ],
+        rodape: { texto: "", endereco: "", copyright: "© 2026 Novo Projeto" }
+      });
+      carregarSiteNaMemoria(novo, true);
+      trocarAba("identidade");
+      mostrarToast("Novo site criado em rascunho. Edite e clique em Salvar.", "info");
+    }
+
+    function adminAddSubdivisao(tipo) {
+      if (!isAdmin()) return;
+      siteAtual.subdivisoes.push({
+        id: "sec-" + Date.now(),
+        tipo,
+        menuLabel: tipo === "hero" ? "Início" : tipo === "sobre" ? "Sobre" : tipo === "grade" ? "Serviços" : "",
+        titulo: "Nova Subdivisão",
+        subtitulo: "",
+        colunas: 3,
+        foto: "",
+        usarImagem: tipo !== "grade",
+        fonteImagem: "padrao",
+        imagemPadraoTema: identificarTemaIlustracao("Nova Subdivisão", tipo),
+        itens: tipo === "grade" ? [{ titulo: "Item 1", descricao: "Descrição do item", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "padrao_generico", whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "", mensagem: "" } }] : [],
+        whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "Falar no WhatsApp", mensagem: "" }
+      });
+      blocosAbertos.add(siteAtual.subdivisoes.length - 1);
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    function adminMoverSubdivisao(idx, dir) {
+      if (!isAdmin()) return;
+      const n = idx + dir;
+      if (n < 0 || n >= siteAtual.subdivisoes.length) return;
+      [siteAtual.subdivisoes[idx], siteAtual.subdivisoes[n]] = [siteAtual.subdivisoes[n], siteAtual.subdivisoes[idx]];
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    function adminRemoverSubdivisao(idx) {
+      if (!isAdmin()) return;
+      siteAtual.subdivisoes.splice(idx, 1);
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    function adminAddItem(sIdx) {
+      if (!isAdmin()) return;
+      siteAtual.subdivisoes[sIdx].itens = siteAtual.subdivisoes[sIdx].itens || [];
+      siteAtual.subdivisoes[sIdx].itens.push({
+        titulo: "Novo Item",
+        descricao: "",
+        foto: "",
+        usarImagem: true,
+        fonteImagem: "padrao",
+        imagemPadraoTema: "padrao_generico",
+        whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "Solicitar", mensagem: "" }
+      });
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    function adminRemoverItem(sIdx, iIdx) {
+      if (!isAdmin()) return;
+      siteAtual.subdivisoes[sIdx].itens.splice(iIdx, 1);
+      marcarPendente();
+      trocarAba("conteudo", true);
+    }
+
+    async function salvarAlteracoesSite() {
+      if (!siteAtual || !siteAtual.siteId) return mostrarToast("Informe o ID/Slug do site.", "erro");
+      const db = getSitesDB();
+      const versaoAnteriorNoBanco = db[siteAtual.siteId] || null;
+      const mudancas = calcularDiffSite(versaoAnteriorNoBanco, siteAtual);
+
+      siteAtual.atualizadoEm = new Date().toLocaleString("pt-BR");
+      db[siteAtual.siteId] = JSON.parse(JSON.stringify(siteAtual));
+      setSitesDB(db);
+
+      // Garante credencial do cliente para novos sites criados pelo Admin
+      const auth = getAuthDB();
+      if (!auth.clientes[siteAtual.siteId]) {
+        auth.clientes[siteAtual.siteId] = { senhaHash: hashSenha(SENHA_PADRAO_INICIAL), mustChange: true };
+        setAuthDB(auth);
+      }
+
+      if (mudancas.length > 0) {
+        registrarAuditoria({
+          tipo: versaoAnteriorNoBanco ? "Alteração de Conteúdo" : "Criação de Site",
+          siteId: siteAtual.siteId,
+          resumo: `${mudancas.length} campo(s) modificado(s) no site ${siteAtual.siteId}.`,
+          mudancas
+        });
+      }
+
+      // Envia para a Pages Function /api/salvar-site quando estiver online na Cloudflare
+      try {
+        await fetch("/api/salvar-site", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(siteAtual)
+        });
+      } catch (e) {}
+
+      snapshotOriginalSite = JSON.parse(JSON.stringify(siteAtual));
+      temAlteracoesPendentes = false;
+      const dot = document.getElementById("dot-pendente");
+      if (dot) dot.classList.add("hidden");
+      if (isAdmin()) popularSeletorSitesAdmin();
+      atualizarCabecalhoWorkspace();
+      mostrarToast(mudancas.length > 0 ? `Salvo! ${mudancas.length} alteração(ões) registrada(s) no log.` : "Salvo com sucesso!", "ok");
+    }
+
+    function salvarIntegracoesAdmin() {
+      if (!isAdmin()) return;
+      const antes = getIntegracoesDB();
+      const depois = {
+        geminiApiKey: document.getElementById("int-gemini-key").value.trim(),
+        geminiModelo: document.getElementById("int-gemini-modelo").value,
+        urlSitePublico: document.getElementById("int-url-publica").value.trim(),
+        instrucoesGlobais: document.getElementById("int-instrucoes").value.trim()
+      };
+      setIntegracoesDB(depois);
+      const mudancas = [];
+      if (antes.geminiModelo !== depois.geminiModelo) mudancas.push({ campo: "Integrações > Modelo Gemini", antes: antes.geminiModelo, depois: depois.geminiModelo });
+      if (antes.urlSitePublico !== depois.urlSitePublico) mudancas.push({ campo: "Integrações > URL Pública", antes: antes.urlSitePublico, depois: depois.urlSitePublico });
+      if (antes.geminiApiKey !== depois.geminiApiKey) mudancas.push({ campo: "Integrações > Gemini API Key", antes: "[Chave protegida]", depois: "[Nova chave salva]" });
+      if (mudancas.length > 0) {
+        registrarAuditoria({ tipo: "Configuração IA", siteId: "GLOBAL", resumo: "Integrações e IA atualizadas pelo Admin.", mudancas });
+      }
+      atualizarCabecalhoWorkspace();
+      mostrarToast("Integrações salvas com sucesso!", "ok");
+    }
+
+    async function uploadLogoPainel(input) {
+      if (!input.files[0]) return;
+      const url = await enviarImagemSegura(input.files[0]);
+      if (!portalConfigDraft) portalConfigDraft = JSON.parse(JSON.stringify(getPortalConfigDB()));
+      portalConfigDraft.logoUrl = url;
+      aplicarPersonalizacaoPainel(portalConfigDraft);
+      trocarAba("configuracoes", true);
+      mostrarToast("Logo do painel carregada! Clique em 'Salvar Personalização do Painel'.", "info");
+    }
+
+    function adicionarCategoriaPortal() {
+      if (!portalConfigDraft) portalConfigDraft = JSON.parse(JSON.stringify(getPortalConfigDB()));
+      portalConfigDraft.categorias.push({
+        id: "cat-" + Date.now(),
+        ativa: true,
+        icone: "⭐",
+        titulo: "Nova Categoria",
+        descricao: "Descreva este benefício exibido na página inicial."
+      });
+      trocarAba("configuracoes", true);
+    }
+
+    function moverCategoriaPortal(idx, dir) {
+      if (!portalConfigDraft) return;
+      const n = idx + dir;
+      if (n < 0 || n >= portalConfigDraft.categorias.length) return;
+      [portalConfigDraft.categorias[idx], portalConfigDraft.categorias[n]] = [portalConfigDraft.categorias[n], portalConfigDraft.categorias[idx]];
+      trocarAba("configuracoes", true);
+    }
+
+    function removerCategoriaPortal(idx) {
+      if (!portalConfigDraft) return;
+      portalConfigDraft.categorias.splice(idx, 1);
+      trocarAba("configuracoes", true);
+    }
+
+    function restaurarPadraoPainel() {
+      portalConfigDraft = getPortalConfigPadrao();
+      aplicarPersonalizacaoPainel(portalConfigDraft);
+      trocarAba("configuracoes", true);
+      mostrarToast("Padrão restaurado em rascunho. Clique em Salvar para confirmar.", "info");
+    }
+
+    function salvarPersonalizacaoPainel() {
+      if (!isAdmin() || !portalConfigDraft) return;
+      const antes = getPortalConfigDB();
+      const depois = JSON.parse(JSON.stringify(portalConfigDraft));
+      setPortalConfigDB(depois);
+      aplicarPersonalizacaoPainel(depois);
+
+      const mudancas = [];
+      const cmp = (campo, a, d) => {
+        if (String(a ?? "") !== String(d ?? "")) {
+          const isImgA = String(a || "").startsWith("data:image") || String(a || "").startsWith("/api/img/");
+          const isImgD = String(d || "").startsWith("data:image") || String(d || "").startsWith("/api/img/");
+          mudancas.push({
+            campo,
+            antes: isImgA ? "[Logo anterior]" : (a || "(vazio)"),
+            depois: isImgD ? "[Nova logo]" : (d || "(vazio)")
+          });
+        }
+      };
+      cmp("Painel > Marca", `${antes.marcaNome} ${antes.marcaDestaque}`.trim(), `${depois.marcaNome} ${depois.marcaDestaque}`.trim());
+      cmp("Painel > Subtítulo", antes.subtituloHeader, depois.subtituloHeader);
+      cmp("Painel > Logo", antes.logoUrl, depois.logoUrl);
+      cmp("Painel > Cor Principal", antes.corEscura, depois.corEscura);
+      cmp("Painel > Cor de Destaque", antes.corAcento, depois.corAcento);
+      cmp("Painel > Cor de Fundo", antes.corFundo, depois.corFundo);
+      cmp("Home > Título Principal", antes.heroTitulo, depois.heroTitulo);
+      cmp("Home > Quantidade de Categorias", String((antes.categorias || []).length), String((depois.categorias || []).length));
+
+      if (mudancas.length > 0) {
+        registrarAuditoria({
+          tipo: "Personalização do Painel",
+          siteId: "PORTAL",
+          resumo: `${mudancas.length} ajuste(s) no perfil visual e categorias da página inicial.`,
+          mudancas
+        });
+      }
+      mostrarToast("Personalização do painel salva e aplicada!", "ok");
+    }
+
+    function abrirModalGemini() {
+      if (!isAdmin()) return;
+      abrirModal("modal-gemini");
+    }
+
+    async function executarGeracaoGemini() {
+      const prompt = document.getElementById("input-prompt-gemini").value.trim();
+      if (!prompt) return mostrarToast("Descreva o site que deseja gerar.", "erro");
+      const btn = document.getElementById("btn-executar-gemini");
+      btn.disabled = true;
+      btn.textContent = "Gerando com IA...";
+
+      try {
+        const res = await fetch("/api/gerar-ia", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.config) {
+            carregarSiteNaMemoria(data.config, true);
+            fecharModal("modal-gemini");
+            trocarAba("conteudo");
+            mostrarToast("Estrutura gerada pelo Gemini! Revise e clique em Salvar.", "ok");
+            return;
+          }
+        }
+        throw new Error("Offline");
+      } catch (e) {
+        // Fallback inteligente em modo prévia local
+        const slug = prompt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 22) || "site-ia";
+        const temaHero = identificarTemaIlustracao(prompt, "hero");
+        const gerado = normalizarEstruturaSite({
+          siteId: slug,
+          dominio: "",
+          paletaTemplateId: "tpl-executivo-marinho",
+          paletaTemplateNome: "Executivo Marinho",
+          identidade: { titulo: prompt.slice(0, 42), logoClara: "", logoEscura: "", cabecalhoFixoCompacto: true, botoesPulsantes: true },
+          paleta: { ...TEMPLATES_COR_PADRAO[1].cores },
+          contatoPadrao: { whatsapp: "5522999990000", mensagemPadrao: "Olá! Vim pelo site e gostaria de mais informações.", instagram: "", botaoFlutuante: true },
+          subdivisoes: [
+            { id: "hero-ia", tipo: "hero", menuLabel: "Início", titulo: "Solução Profissional Sob Medida", subtitulo: prompt, colunas: 2, foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: temaHero, itens: [], whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Falar no WhatsApp", mensagem: "Olá! Quero saber mais." } },
+            { id: "servicos-ia", tipo: "grade", menuLabel: "Serviços", titulo: "Nossos Serviços", subtitulo: "Qualidade e atendimento dedicado.", colunas: 3, foto: "", usarImagem: false, fonteImagem: "padrao", imagemPadraoTema: "padrao_generico", itens: [
+              { titulo: "Atendimento Personalizado", descricao: "Cuidado em cada detalhe para atender sua necessidade.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: temaHero, whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Solicitar", mensagem: "Olá! Quero informações." } },
+              { titulo: "Soluções Completas", descricao: "Estrutura moderna com agilidade e transparência.", foto: "", usarImagem: true, fonteImagem: "padrao", imagemPadraoTema: "padrao_generico", whatsapp: { ativo: true, usarPadrao: true, numeroCustom: "", textoBotao: "Orçar Agora", mensagem: "Olá! Quero um orçamento." } }
+            ], whatsapp: { ativo: false, usarPadrao: true, numeroCustom: "", textoBotao: "", mensagem: "" } }
+          ],
+          rodape: { texto: "Atendimento profissional com excelência.", endereco: "Macaé/RJ e Região", copyright: "© 2026 Todos os direitos reservados" }
+        });
+        carregarSiteNaMemoria(gerado, true);
+        fecharModal("modal-gemini");
+        trocarAba("conteudo");
+        mostrarToast("Estrutura gerada (Prévia Local)! Na Cloudflare usará sua Gemini API.", "info");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "✨ Gerar Estrutura Agora";
+      }
+    }
+
+    function copiarLinkSite() {
+      const url = obterUrlDoSiteAtual();
+      if (!url) return;
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      ta.remove();
+      mostrarToast("Link copiado: " + url, "ok");
+    }
+
+    function exportarLogs(formato) {
+      const logs = getLogsDB();
+      let conteudo = "";
+      let mime = "application/json";
+      let ext = "json";
+      if (formato === "csv") {
+        mime = "text/csv;charset=utf-8";
+        ext = "csv";
+        const linhas = ["DataHora;Ator;Perfil;Site;Tipo;Resumo"];
+        logs.forEach(l => linhas.push(`"${l.dataHora}";"${l.ator}";"${l.role}";"${l.siteId}";"${l.tipo}";"${String(l.resumo).replace(/"/g, '""')}"`));
+        conteudo = linhas.join("\n");
+      } else {
+        conteudo = JSON.stringify(logs, null, 2);
+      }
+      const blob = new Blob([conteudo], { type: mime });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `auditoria-webpanel.${ext}`;
+      a.click();
+    }
+
+    function instalarPWA() {
+      if (deferredPromptPWA) {
+        deferredPromptPWA.prompt();
+        deferredPromptPWA = null;
+      } else {
+        mostrarToast("No celular: toque em Compartilhar (iOS) ou Menu ⋮ (Android) → 'Adicionar à tela inicial'.", "info");
+      }
+    }
+
+    // =========================================================================
+    // 13. INICIALIZAÇÃO DE EVENTOS E EXPOSIÇÃO GLOBAL
+    // =========================================================================
+    Object.assign(window, {
+      abrirModal,
+      fecharModal,
+      fazerLogout,
+      trocarAba,
+      toggleMobileDrawer,
+      marcarPendente,
+      atualizarCabecalhoWorkspace,
+      atualizarSlugSite,
+      atualizarWhatsappPadrao,
+      atualizarCor,
+      atualizarCorHex,
+      aplicarTemplateCor,
+      ativarCorAvulsa,
+      confirmarNovoTemplateCor,
+      excluirTemplateCor,
+      toggleBloco,
+      toggleUsarImagemSecao,
+      definirFonteImagemSecao,
+      toggleUsarImagemItem,
+      definirFonteImagemItem,
+      uploadLogoSite,
+      uploadFotoSecao,
+      uploadFotoItem,
+      adminTrocarSite,
+      adminCriarNovoSite,
+      adminAddSubdivisao,
+      adminMoverSubdivisao,
+      adminRemoverSubdivisao,
+      adminAddItem,
+      adminRemoverItem,
+      salvarAlteracoesSite,
+      salvarIntegracoesAdmin,
+      trocarSubAbaConfig,
+      aplicarPersonalizacaoPainel,
+      uploadLogoPainel,
+      adicionarCategoriaPortal,
+      moverCategoriaPortal,
+      removerCategoriaPortal,
+      restaurarPadraoPainel,
+      salvarPersonalizacaoPainel,
+      abrirModalGemini,
+      executarGeracaoGemini,
+      copiarLinkSite,
+      exportarLogs,
+      instalarPWA,
+      alterarDispositivoPrevia,
+      recarregarPreviaSite,
+      salvarEAtualizarPrevia,
+      abrirPreviaNovaAba
+    });
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPromptPWA = e;
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Aplica logo, cores e categorias personalizadas do painel na página inicial e sidebar
+      aplicarPersonalizacaoPainel();
+
+      // Botões de Login Cliente
+      const abrirLoginCliente = () => {
+        document.getElementById("erro-login-cliente").classList.add("hidden");
+        abrirModal("modal-login-cliente");
+        setTimeout(() => document.getElementById("input-cliente-usuario").focus(), 80);
+      };
+      document.getElementById("btn-header-login")?.addEventListener("click", abrirLoginCliente);
+      document.getElementById("btn-hero-login")?.addEventListener("click", abrirLoginCliente);
+
+      // Submit Login Cliente
+      document.getElementById("form-login-cliente")?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const erroEl = document.getElementById("erro-login-cliente");
+        if (verificarBloqueioForcaBruta("cliente", erroEl)) return;
+
+        const user = document.getElementById("input-cliente-usuario").value.trim().toLowerCase();
+        const senha = document.getElementById("input-cliente-senha").value;
+        const auth = getAuthDB();
+        const conta = auth.clientes[user];
+
+        if (!conta || conta.senhaHash !== hashSenha(senha)) {
+          registrarFalhaLogin("cliente", erroEl, "Usuário ou senha inválidos.");
+          return;
+        }
+
+        tentativasLogin.cliente.count = 0;
+        fecharModal("modal-login-cliente");
+        salvarSessao({ role: "cliente", user });
+        iniciarWorkspaceAutenticado();
+        if (conta.mustChange) abrirModal("modal-trocar-senha");
+      });
+
+      // Submit Login Admin
+      document.getElementById("form-login-admin")?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const erroEl = document.getElementById("erro-login-admin");
+        if (verificarBloqueioForcaBruta("admin", erroEl)) return;
+
+        const chave = document.getElementById("input-admin-chave").value.trim();
+        const senha = document.getElementById("input-admin-senha").value;
+        const auth = getAuthDB();
+
+        if (chave !== auth.admin.chave || auth.admin.senhaHash !== hashSenha(senha)) {
+          registrarFalhaLogin("admin", erroEl, "Chave privada ou senha incorreta.");
+          return;
+        }
+
+        tentativasLogin.admin.count = 0;
+        fecharModal("modal-login-admin");
+        salvarSessao({ role: "admin", user: "ADMIN-MASTER" });
+        iniciarWorkspaceAutenticado();
+        if (auth.admin.mustChange) abrirModal("modal-trocar-senha");
+      });
+
+      // Submit Troca Obrigatória de Senha
+      document.getElementById("form-trocar-senha")?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const erroEl = document.getElementById("erro-trocar-senha");
+        const s1 = document.getElementById("input-nova-senha-1").value;
+        const s2 = document.getElementById("input-nova-senha-2").value;
+
+        if (s1 !== s2) {
+          erroEl.textContent = "As duas senhas não coincidem.";
+          erroEl.classList.remove("hidden");
+          return;
+        }
+        if (!validarSenhaForte(s1)) {
+          erroEl.textContent = "A senha precisa ter no mínimo 8 caracteres, com letra, número e símbolo.";
+          erroEl.classList.remove("hidden");
+          return;
+        }
+        if (s1 === SENHA_PADRAO_INICIAL) {
+          erroEl.textContent = "Escolha uma senha diferente da senha padrão inicial.";
+          erroEl.classList.remove("hidden");
+          return;
+        }
+
+        const auth = getAuthDB();
+        const novoHash = hashSenha(s1);
+        if (sessaoAtual.role === "admin") {
+          auth.admin.senhaHash = novoHash;
+          auth.admin.mustChange = false;
+        } else if (auth.clientes[sessaoAtual.user]) {
+          auth.clientes[sessaoAtual.user].senhaHash = novoHash;
+          auth.clientes[sessaoAtual.user].mustChange = false;
+        }
+        setAuthDB(auth);
+
+        registrarAuditoria({
+          tipo: "Troca de Senha",
+          siteId: sessaoAtual.role === "admin" ? "ADMIN" : sessaoAtual.user,
+          resumo: `Senha de acesso atualizada por ${sessaoAtual.role === "admin" ? "ADMIN-MASTER" : sessaoAtual.user}.`,
+          privacidadeSenha: true
+        });
+
+        fecharModal("modal-trocar-senha");
+        mostrarToast("Nova senha forte salva com sucesso!", "ok");
+      });
+
+      // Restaura sessão automaticamente no F5 (12 horas)
+      restaurarSessaoSeValida();
+    });
+  </script>
+
+  <!-- =========================================================================
+       BLOCO ISOLADO E À PROVA DE FALHAS: GATILHO OCULTO DO ADMIN (5 CLIQUES + 1s DELAY)
+       Mantido em <script> independente para nunca ser afetado por atualizações futuras.
+  ========================================================================== -->
+  <script id="admin-trigger-isolated">
+    (function () {
+      let adminDelayTimer = null;
+
+      function dispararAberturaAdminComDelay(elVisual) {
+        if (elVisual) {
+          elVisual.classList.remove("brand-vibrate");
+          void elVisual.offsetWidth;
+          elVisual.classList.add("brand-vibrate");
+        }
+        try { if (navigator.vibrate) navigator.vibrate([60, 40, 100]); } catch (e) {}
+
+        if (adminDelayTimer) clearTimeout(adminDelayTimer);
+        adminDelayTimer = setTimeout(() => {
+          const erroEl = document.getElementById("erro-login-admin");
+          const modal = document.getElementById("modal-login-admin");
+          const input = document.getElementById("input-admin-chave");
+          if (erroEl) erroEl.classList.add("hidden");
+          if (modal) modal.classList.remove("hidden");
+          if (input) setTimeout(() => input.focus(), 80);
+        }, 1000); // Delay exato de 1 segundo após ativar o gatilho
+      }
+
+      function vincular5CliquesSeguro(triggerId) {
+        let count = 0;
+        let lastTime = 0;
+
+        document.addEventListener("click", function (ev) {
+          const alvo = ev.target && ev.target.closest ? ev.target.closest("#" + triggerId) : null;
+          if (!alvo) return;
+
+          const now = Date.now();
+          if (now - lastTime > 3000) count = 0;
+          lastTime = now;
+          count += 1;
+
+          alvo.classList.remove("brand-vibrate");
+          void alvo.offsetWidth;
+          alvo.classList.add("brand-vibrate");
+          try { if (navigator.vibrate) navigator.vibrate(25); } catch (e) {}
+
+          if (count >= 5) {
+            count = 0;
+            dispararAberturaAdminComDelay(alvo);
+          }
+        });
+      }
+
+      vincular5CliquesSeguro("admin-trigger-header");
+      vincular5CliquesSeguro("admin-trigger-footer");
+
+      // Atalho de teclado Admin (Ctrl+Shift+A ou Alt+Shift+A) com o mesmo delay de 1s
+      document.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.altKey) && e.shiftKey && e.key && e.key.toUpperCase() === "A") {
+          e.preventDefault();
+          dispararAberturaAdminComDelay(document.getElementById("admin-trigger-header"));
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
