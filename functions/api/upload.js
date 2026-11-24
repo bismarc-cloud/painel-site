@@ -1,4 +1,14 @@
-import { getAccessToken, ensureFolder, uploadBinaryFile, jsonResponse } from '../_lib/gdrive.js';
+import { callDriveBridge, jsonResponse } from '../_lib/gdrive.js';
+
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -6,14 +16,11 @@ export async function onRequest(context) {
   if (request.method !== 'POST') return jsonResponse({ ok: false, error: 'Use POST' }, 405);
 
   try {
-    const token = await getAccessToken(env);
-    const rootId = env.GDRIVE_ROOT_FOLDER_ID;
     const contentType = request.headers.get('content-type') || '';
-
     let siteId = 'geral';
     let fileName = `img_${Date.now()}.png`;
     let mimeType = 'image/png';
-    let arrayBuffer;
+    let base64 = '';
 
     if (contentType.includes('multipart/form-data')) {
       const form = await request.formData();
@@ -24,27 +31,31 @@ export async function onRequest(context) {
       }
       fileName = `${Date.now()}_${file.name}`;
       mimeType = file.type || 'image/png';
-      arrayBuffer = await file.arrayBuffer();
+      base64 = arrayBufferToBase64(await file.arrayBuffer());
     } else {
       const body = await request.json();
       siteId = String(body.siteId || 'geral').replace(/[^a-z0-9-]/gi, '-');
       fileName = `${Date.now()}_${body.fileName || 'imagem.png'}`;
       mimeType = body.mimeType || 'image/png';
-      const base64Clean = String(body.base64 || '').replace(/^data:[^;]+;base64,/, '');
-      const binary = atob(base64Clean);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      arrayBuffer = bytes.buffer;
+      base64 = String(body.base64 || '').replace(/^data:[^;]+;base64,/, '');
     }
 
-    const siteFolderId = await ensureFolder(token, siteId, rootId);
-    const assetsFolderId = await ensureFolder(token, 'assets', siteFolderId);
-    const fileId = await uploadBinaryFile(token, fileName, mimeType, arrayBuffer, assetsFolderId);
+    const driveRes = await callDriveBridge(env, {
+      action: 'upload',
+      siteId,
+      fileName,
+      mimeType,
+      base64
+    });
+
+    if (!driveRes.ok) {
+      return jsonResponse({ ok: false, error: driveRes.error || 'Falha no upload para o Google Drive.' }, 500);
+    }
 
     return jsonResponse({
       ok: true,
-      id: fileId,
-      url: `/api/img/${fileId}`
+      id: driveRes.id,
+      url: driveRes.url
     });
   } catch (err) {
     return jsonResponse({ ok: false, error: err.message }, 500);
