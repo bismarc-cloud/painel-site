@@ -1,4 +1,4 @@
-import { getAccessToken, ensureFolder, readJsonFile, writeJsonFile, jsonResponse } from '../_lib/gdrive.js';
+import { callDriveBridge, jsonResponse } from '../_lib/gdrive.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -22,13 +22,6 @@ export async function onRequest(context) {
     siteConfig.siteId = siteId;
     siteConfig.atualizadoEm = new Date().toISOString();
 
-    const token = await getAccessToken(env);
-    const rootId = env.GDRIVE_ROOT_FOLDER_ID;
-
-    const siteFolderId = await ensureFolder(token, siteId, rootId);
-    await writeJsonFile(token, 'config.json', siteFolderId, siteConfig);
-
-    const index = (await readJsonFile(token, 'sites_index.json', rootId)) || [];
     const entry = {
       siteId,
       titulo: siteConfig.titulo || siteId,
@@ -36,13 +29,39 @@ export async function onRequest(context) {
       atualizadoEm: siteConfig.atualizadoEm
     };
 
-    const pos = index.findIndex(s => s.siteId === siteId);
-    if (pos >= 0) index[pos] = entry;
-    else index.push(entry);
+    // 1. Grava no Cloudflare KV (imediato)
+    let kvSaved = false;
+    if (env.SITES_KV) {
+      await env.SITES_KV.put(`site:${siteId}`, JSON.stringify(siteConfig));
+      const index = (await env.SITES_KV.get('sites_index', 'json')) || [];
+      const pos = index.findIndex(s => s.siteId === siteId);
+      if (pos >= 0) index[pos] = entry;
+      else index.push(entry);
+      await env.SITES_KV.put('sites_index', JSON.stringify(index));
+      kvSaved = true;
+    }
 
-    await writeJsonFile(token, 'sites_index.json', rootId, index);
+    // 2. Espelha no Google Drive via Apps Script (backup + organização em pastas)
+    const driveRes = await callDriveBridge(env, {
+      action: 'save_site',
+      siteConfig
+    });
 
-    return jsonResponse({ ok: true, siteId, atualizadoEm: siteConfig.atualizadoEm });
+    if (!kvSaved && !driveRes.ok) {
+      return jsonResponse({
+        ok: false,
+        error: driveRes.error || 'Nem SITES_KV nem GDRIVE_SCRIPT_URL estão configurados.'
+      }, 500);
+    }
+
+    return jsonResponse({
+      ok: true,
+      siteId,
+      atualizadoEm: siteConfig.atualizadoEm,
+      kvSaved,
+      driveSynced: !!driveRes.ok,
+      driveError: driveRes.ok ? null : driveRes.error
+    });
   } catch (err) {
     return jsonResponse({ ok: false, error: err.message }, 500);
   }
