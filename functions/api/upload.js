@@ -24,20 +24,39 @@ export async function onRequest(context) {
 
     if (contentType.includes('multipart/form-data')) {
       const form = await request.formData();
-      const file = form.get('file');
-      siteId = String(form.get('siteId') || 'geral').replace(/[^a-z0-9-]/gi, '-');
+      siteId = String(form.get('siteId') || form.get('slug') || 'geral').replace(/[^a-z0-9-]/gi, '-');
+
+      // Procura o arquivo em qualquer campo enviado no FormData (file, imagem, foto, arquivo, etc.)
+      let file = form.get('file') || form.get('imagem') || form.get('foto') || form.get('arquivo');
       if (!file || typeof file === 'string') {
-        return jsonResponse({ ok: false, error: 'Arquivo não enviado.' }, 400);
+        for (const value of form.values()) {
+          if (value && typeof value === 'object' && typeof value.arrayBuffer === 'function') {
+            file = value;
+            break;
+          }
+        }
       }
-      fileName = `${Date.now()}_${file.name}`;
+
+      if (!file || typeof file === 'string') {
+        return jsonResponse({ ok: false, error: 'Nenhum arquivo de imagem encontrado no envio.' }, 400);
+      }
+
+      fileName = `${Date.now()}_${file.name || 'imagem.png'}`;
       mimeType = file.type || 'image/png';
       base64 = arrayBufferToBase64(await file.arrayBuffer());
     } else {
       const body = await request.json();
-      siteId = String(body.siteId || 'geral').replace(/[^a-z0-9-]/gi, '-');
-      fileName = `${Date.now()}_${body.fileName || 'imagem.png'}`;
-      mimeType = body.mimeType || 'image/png';
-      base64 = String(body.base64 || '').replace(/^data:[^;]+;base64,/, '');
+      siteId = String(body.siteId || body.slug || 'geral').replace(/[^a-z0-9-]/gi, '-');
+      const rawData = body.base64 || body.dataUrl || body.imagem || body.image || body.file || '';
+
+      if (!rawData) {
+        return jsonResponse({ ok: false, error: 'Conteúdo base64 da imagem não enviado.' }, 400);
+      }
+
+      const mimeMatch = String(rawData).match(/^data:([^;]+);base64,/);
+      mimeType = body.mimeType || (mimeMatch ? mimeMatch[1] : 'image/png');
+      fileName = `${Date.now()}_${body.fileName || body.name || 'imagem.png'}`;
+      base64 = String(rawData).replace(/^data:[^;]+;base64,/, '');
     }
 
     const driveRes = await callDriveBridge(env, {
